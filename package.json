@@ -1,6 +1,7 @@
 {
-  "name": "generator-react-cra-multiple-entry",
+  "name": "esp-i18n",
   "version": "1.0.0",
+  "main": "src/main.js",
   "description": "Scaffolding of React App using CRA, Rewired, which support multiple entry",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
