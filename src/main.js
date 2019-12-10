@@ -161,7 +161,8 @@ module.exports = async (params) => {
         await asyncForEach(jsFiles, async file => {
 
             const entries = [];
-            let source = fs.readFileSync(file, 'UTF8').replace(/@/g, '');
+            const fileContent = fs.readFileSync(file, 'UTF8');
+            let source = fileContent.replace(/@/g, '');
             let hasImported = false;
             let importMeta = null;
             const importToolNames = [];
@@ -234,7 +235,9 @@ module.exports = async (params) => {
                 if (finalImport && !hasImported) {
                     source = finalImport + source;
                 }
-                Utils.writeSync(path.resolve(srcTarget, path.relative(baseFolder, file)), source);
+                if(sortedEntries.length){
+                    Utils.writeSync(path.resolve(srcTarget, path.relative(baseFolder, file)), source);
+                }
             } catch (e) {
                 console.log(`解析文件失败：${file}`);
             }
