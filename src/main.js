@@ -33,6 +33,7 @@ module.exports = async (params) => {
 
     const folders = params.folders || [];
     const baseFolder = process.cwd();
+    const srcTarget = path.resolve(process.cwd(), params.srcCopyFolder || '');
     const localToolsPath = params.localTools || '~/locale-tools';
     const target = path.resolve(process.cwd(), params.target);
 
@@ -144,20 +145,7 @@ module.exports = async (params) => {
         }
     }
 
-    async function getId(value, file) {
-        const relativePath = path.relative(baseFolder, file);
-        const parts = relativePath.split(/[\\\/]/);
-        const name = parts.reduce((names, part, index) => {
-            if (index === 0) {
-                if (part === 'src') {
-                    return names;
-                }
-                names.push(part);
-            } else {
-                names.push(part[0] + part.substring(1));
-            }
-            return names;
-        }, []).join('-');
+    async function getId(value) {
         const id = await translation(value);
         return `${id ? id : value}`;
     }
@@ -246,7 +234,7 @@ module.exports = async (params) => {
                 if (finalImport && !hasImported) {
                     source = finalImport + source;
                 }
-                Utils.writeSync(file, source);
+                Utils.writeSync(path.resolve(srcTarget, path.relative(baseFolder, file)), source);
             } catch (e) {
                 console.log(`解析文件失败：${file}`);
             }
