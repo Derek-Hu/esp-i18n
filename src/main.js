@@ -76,6 +76,7 @@ module.exports = async (params) => {
 
     const englishJSON = {};
     const chinaJSON = {};
+    const duplicateKeys = {};
 
     async function translation(words) {
         const selector = 'p.ordinary-output.target-output';
@@ -124,9 +125,19 @@ module.exports = async (params) => {
                 };
             }, {});
 
-            chinaJSON[datas.id] = words;
-            englishJSON[datas.id] = datas.english;
-            return datas && datas.id ? datas.id : words;
+            let validId = datas.id;
+
+            if((validId in chinaJSON) && (chinaJSON[validId] !== words)){
+                if(duplicateKeys[validId]){
+                    duplicateKeys[validId] += 1;
+                }else{
+                    duplicateKeys[validId] = 1;
+                }
+                validId = `${validId}-${duplicateKeys[datas.id]}`;
+            }
+            chinaJSON[validId] = words;
+            englishJSON[validId] = datas.english;
+            return validId;
         } catch (e) {
             console.log(e);
             return words;
@@ -148,7 +159,7 @@ module.exports = async (params) => {
             return names;
         }, []).join('-');
         const id = await translation(value);
-        return `${name.replace(/\.js$/, '')}.${id ? id : value}`;
+        return `${id ? id : value}`;
     }
 
     async function asyncForEach(array, callback) {
