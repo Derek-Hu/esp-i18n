@@ -2,9 +2,8 @@
   "name": "esp-i18n",
   "version": "1.0.0",
   "main": "src/main.js",
-  "description": "Scaffolding of React App using CRA, Rewired, which support multiple entry",
+  "description": "Extract locale files and rewrite source code for i18n",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "babel-node src/main.js",
     "build": "npm run build:js",
     "build:types": "tsc --emitDeclarationOnly",
@@ -13,25 +12,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Derek-Hu/generator-react-cra-multiple-entry.git"
+    "url": "git+https://github.com/Derek-Hu/esp-i18n.git"
   },
   "keywords": [
-    "yeoman-generator",
+    "i18n",
     "react",
-    "create-react-app",
-    "react-app-rewire",
-    "rewire",
-    "multi",
-    "multiple",
-    "entry",
-    "webpack"
+    "locale",
+    "extract"
   ],
   "author": "hubenlv",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/Derek-Hu/generator-react-cra-multiple-entry/issues"
-  },
-  "homepage": "https://github.com/Derek-Hu/generator-react-cra-multiple-entry#readme",
+  "homepage": "https://github.com/Derek-Hu/esp-i18n#readme",
   "devDependencies": {
     "@babel/cli": "^7.2.3",
     "@babel/core": "^7.4.0",
@@ -51,15 +42,6 @@
   "dependencies": {
     "@babel/parser": "^7.7.5",
     "@babel/traverse": "^7.7.4",
-    "acorn": "^5.7.3",
-    "acorn-es7": "^0.1.0",
-    "acorn-es7-plugin": "^1.1.7",
-    "acorn-jsx": "^4.1.1",
-    "acorn-loose": "^6.1.0",
-    "acorn-object-rest-spread": "^1.1.0",
-    "acorn-stage3": "^0.6.0",
-    "acorn-static-class-property-initializer": "^1.0.0",
-    "acorn-walk": "^7.0.0",
     "puppeteer": "^2.0.0"
   }
 }

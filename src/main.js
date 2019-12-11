@@ -5,10 +5,6 @@ const traverse = require("@babel/traverse").default;
 const babelParser = require("@babel/parser");
 const Utils = require('./utils');
 
-const Types = {
-    jsFunc: 'formatMessage',
-    compName: 'FormattedMessage'
-}
 function isChineaseText(value) {
     return /[\u4e00-\u9fa5]/.test(value);
 }
@@ -35,6 +31,11 @@ module.exports = async (params) => {
     const srcTarget = path.resolve(process.cwd(), params.srcCopyFolder || '');
     const localToolsPath = params.localTools || '~/locale-tools';
     const target = path.resolve(process.cwd(), params.target);
+
+    const Types = {
+        jsFunc: params.jsName || 'formatMessage',
+        compName: params.componentName || 'FormattedMessage'
+    }
 
     const browser = await puppeteer.launch({
         headless: params.headless !== false
