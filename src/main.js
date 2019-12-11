@@ -132,6 +132,10 @@ module.exports = async (params) => {
         const jsFiles = getJSFileList(path.resolve(baseFolder, folder));
         await asyncForEach(jsFiles, async file => {
 
+            // exclude generated files
+            if(file.indexOf(target)===0){
+                return;
+            }
             const entries = [];
             const fileContent = fs.readFileSync(file, 'UTF8');
             let source = fileContent;
