@@ -49,10 +49,13 @@
     "prettier": "^1.16.4"
   },
   "dependencies": {
+    "@babel/parser": "^7.7.5",
+    "@babel/traverse": "^7.7.4",
     "acorn": "^5.7.3",
     "acorn-es7": "^0.1.0",
     "acorn-es7-plugin": "^1.1.7",
     "acorn-jsx": "^4.1.1",
+    "acorn-loose": "^6.1.0",
     "acorn-object-rest-spread": "^1.1.0",
     "acorn-stage3": "^0.6.0",
     "acorn-static-class-property-initializer": "^1.0.0",

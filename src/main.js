@@ -1,24 +1,14 @@
 const fs = require('fs');
 const path = require('path');
 const puppeteer = require('puppeteer');
-const esprima = require('esprima');
-var acorn = require('acorn');
-const walk = require("acorn-walk")
-var injectAcornJsx = require('acorn-jsx/inject');
-var injectAcornObjectRestSpread = require('acorn-object-rest-spread/inject');
-var injectAcornStaticClassPropertyInitializer = require('acorn-static-class-property-initializer/inject');
-injectAcornJsx(acorn);
-injectAcornObjectRestSpread(acorn);
-injectAcornStaticClassPropertyInitializer(acorn);
-acorn = require('acorn-es7')(acorn)
-// acorn = require('acorn-es7-plugin')(acorn);
-acorn = require('acorn-stage3/inject')(acorn);
-
+const traverse = require("@babel/traverse").default;
+const babelParser = require("@babel/parser");
 const Utils = require('./utils');
+
 const Types = {
-    JSXText: 'JSXText',
-    JSXAttribute: 'JSXAttribute',
-};
+    jsFunc: 'formatMessage',
+    compName: 'FormattedMessage'
+}
 function isChineaseText(value) {
     return /[\u4e00-\u9fa5]/.test(value);
 }
@@ -33,7 +23,6 @@ function getJSFileList(root) {
         if (!stat.isDirectory() && /\.js$/.test(pathname)) {
             res.push(pathname);
         } else if (stat.isDirectory()) {
-            // console.log('pathname', pathname)
             res = res.concat(getJSFileList(pathname));
         }
     });
@@ -41,36 +30,11 @@ function getJSFileList(root) {
 }
 
 module.exports = async (params) => {
-
     const folders = params.folders || [];
     const baseFolder = process.cwd();
     const srcTarget = path.resolve(process.cwd(), params.srcCopyFolder || '');
     const localToolsPath = params.localTools || '~/locale-tools';
     const target = path.resolve(process.cwd(), params.target);
-
-    function isChinaCall(node, file, nameMapping) {
-        const Names = {
-            formatMessage: nameMapping['formatMessage'] || 'formatMessage',
-            FormattedMessage: nameMapping['FormattedMessage'] || 'FormattedMessage',
-        }
-        const hasImported = (node.type === 'ImportDeclaration' && node.source.value === localToolsPath);
-        const type = Types[node.type];
-        const value = type && type === 'JSXAttribute' ? node.value.value : node.value;
-        const isJSXAttribute = type === 'JSXAttribute';
-        const attr = isJSXAttribute ? node.name.name : null;
-        if (type && isChineaseText(value)) {
-            return {
-                isComponent: !isJSXAttribute,
-                attr: attr,
-                start: node.start,
-                end: node.end,
-                hasImported: hasImported,
-                value: value,
-                file: file,
-                getReplacement: (id) => isJSXAttribute ? `${attr}={${Names['formatMessage']}({id: '${id}'})}` : `<${Names['FormattedMessage']} id="${id}" />`
-            }
-        }
-    }
 
     const browser = await puppeteer.launch({
         headless: params.headless !== false
@@ -95,7 +59,6 @@ module.exports = async (params) => {
         await page.goto(`https://fanyi.baidu.com/#zh/en/${decodeURIComponent(words)}`, { waitUntil: 'networkidle0' });
         await page.reload();
         await page.waitForFunction(selector => !!document.querySelector(selector), {}, selector);
-        // await page.reload();
         try {
             const datas = await page.evaluate(() => {
                 function formatWord(word) {
@@ -103,10 +66,8 @@ module.exports = async (params) => {
                 }
 
                 const translationEle = document.querySelector("p.ordinary-output.target-output");
-
                 const keyMeansElems = document.querySelectorAll("ul.keywords-container li.keywords-content .keywords-means");
                 const keyMeans = Array.prototype.slice.call(keyMeansElems).map(ele => ele.textContent);
-
                 const translation = translationEle.textContent.trim();
 
                 let id = null;
@@ -173,7 +134,6 @@ module.exports = async (params) => {
 
             const entries = [];
             const fileContent = fs.readFileSync(file, 'UTF8');
-            // let source = fileContent.replace(/@/g, '');
             let source = fileContent;
             let hasImported = false;
             let importMeta = null;
@@ -181,66 +141,92 @@ module.exports = async (params) => {
             const nameMapping = {};
 
             try {
-                const astTree = acorn.parse(source, {
-                    sourceType: 'module',
-                    plugins: {
-                        jsx: {
-                            allowNamespacedObjects: true
-                        },
-                        objectRestSpread: true,
-                        staticClassPropertyInitializer: true,
-                        es7:true,
-                        stage3: true
-                    },
-                    ecmaVersion:7
+                const astTree = babelParser.parse(source, {
+                    sourceType: 'unambiguous',
+                    plugins: [
+                        'jsx',
+                        'typescript',
+                        ['decorators', { decoratorsBeforeExport: true }]
+                    ],
                 });
-                console.log(JSON.stringify(astTree));
-                // walk.full((astTree), node => {
-                        // console.log(node);
-                        // return;
-                        // console.log(`Found a literal: `, node);
-                        // if (!hasImported) {
-                        //     hasImported = (node.type === 'ImportDeclaration' && node.source.value === localToolsPath);
-                        //     if (hasImported) {
-                        //         console.log(node);
-                        //         node.specifiers.forEach(spec => {
-                        //             nameMapping[spec.imported.name] = spec.local.name;
-                        //             importToolNames.push(`${spec.imported.name}${spec.imported.name !== spec.local.name ? ` as ${spec.local.name}` : ''}`);
-                        //         });
-                        //         importMeta = {
-                        //             start: node.start,
-                        //             end: node.end,
-                        //         }
-                        //     }
-                        // }
-    
-                        // const call = isChinaCall(node, file, nameMapping);
-                        // if (call) {
-                        //     entries.push(call);
-                        // }
-                // });
-                console.log('entries', entries)
-                // esprima.parseModule(source, { jsx: true }, function (node, meta) {
-                //     if (!hasImported) {
-                //         hasImported = (node.type === 'ImportDeclaration' && node.source.value === localToolsPath);
-                //         if (hasImported) {
-                //             node.specifiers.forEach(spec => {
-                //                 nameMapping[spec.imported.name] = spec.local.name;
-                //                 importToolNames.push(`${spec.imported.name}${spec.imported.name !== spec.local.name ? ` as ${spec.local.name}` : ''}`);
-                //             });
+                traverse(astTree, {
+                    StringLiteral(_node){
+                        if(['ImportDeclaration', 'JSXAttribute', 'JSXText'].includes(_node.parent.type)){
+                            return;
+                        }
+                        const node = _node.node;
+                        const value = node.value;
+                        if (!isChineaseText(value)) {
+                            return;
+                        }
+                        const funcName = nameMapping[Types.jsFunc] || Types.jsFunc;
+                        const call = {
+                            isComponent: false,
+                            start: node.start,
+                            end: node.end,
+                            value: value,
+                            file: file,
+                            getReplacement: (id) => `${funcName}({id: '${id}'})`
+                        }
+                        entries.push(call);
+                    },
+                    ImportDeclaration(_node) {
+                        const node = _node.node;
+                        // console.log('ImportDeclaration', JSON.stringify(node));
+                        if (!hasImported) {
+                            hasImported = (node.type === 'ImportDeclaration' && node.source.value === localToolsPath);
+                            if (hasImported) {
+                                node.specifiers.forEach(spec => {
+                                    nameMapping[spec.imported.name] = spec.local.name;
+                                    importToolNames.push(`${spec.imported.name}${spec.imported.name !== spec.local.name ? ` as ${spec.local.name}` : ''}`);
+                                });
+                                importMeta = {
+                                    start: node.start,
+                                    end: node.end,
+                                }
+                            }
+                        }
+                    },
+                    JSXAttribute(_node) {
+                        const node = _node.node;
+                        const value = node.value.value;
+                        if (!isChineaseText(value)) {
+                            return;
+                        }
+                        const funcName = nameMapping[Types.jsFunc] || Types.jsFunc;
+                        const attr = node.name.name;
 
-                //             importMeta = {
-                //                 start: meta.start.offset,
-                //                 end: meta.end.offset,
-                //             }
-                //         }
-                //     }
+                        const call = {
+                            isComponent: false,
+                            start: node.start,
+                            end: node.end,
+                            value: value,
+                            file: file,
+                            getReplacement: (id) => `${attr}={${funcName}({id: '${id}'})}`
+                        }
+                        entries.push(call);
 
-                //     const call = isChinaCall(node, meta, file, nameMapping);
-                //     if (call) {
-                //         entries.push(call);
-                //     }
-                // });
+                    },
+                    JSXText(_node) {
+                        const node = _node.node;
+                        const value = node.value;
+                        if (!isChineaseText(value)) {
+                            return;
+                        }
+                        const funcName = nameMapping[Types.compName] || Types.compName;
+
+                        const call = {
+                            isComponent: true,
+                            start: node.start,
+                            end: node.end,
+                            value: value,
+                            file: file,
+                            getReplacement: (id) => `<${funcName} id="${id}" />`
+                        }
+                        entries.push(call);
+                    }
+                });
+                // console.log('entries', entries);
 
                 await asyncForEach(entries, async entry => {
                     entry.id = await getId(entry.value, entry.file);
@@ -249,10 +235,10 @@ module.exports = async (params) => {
                 const hasJSToolImport = entries.some(entry => !entry.isComponent);
                 const hasCompToolImport = entries.some(entry => entry.isComponent);
 
-                const metas = {
-                    formatMessage: hasJSToolImport,
-                    FormattedMessage: hasCompToolImport,
-                }
+                const metas = {};
+                metas[Types.jsFunc] = hasJSToolImport;
+                metas[Types.compName] = hasCompToolImport;
+                
                 Object.keys(metas).forEach((key) => {
                     if (metas[key]) {
                         let statement = null;
