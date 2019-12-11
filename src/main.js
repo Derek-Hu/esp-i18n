@@ -2,8 +2,19 @@ const fs = require('fs');
 const path = require('path');
 const puppeteer = require('puppeteer');
 const esprima = require('esprima');
-const Utils = require('./utils');
+var acorn = require('acorn');
+const walk = require("acorn-walk")
+var injectAcornJsx = require('acorn-jsx/inject');
+var injectAcornObjectRestSpread = require('acorn-object-rest-spread/inject');
+var injectAcornStaticClassPropertyInitializer = require('acorn-static-class-property-initializer/inject');
+injectAcornJsx(acorn);
+injectAcornObjectRestSpread(acorn);
+injectAcornStaticClassPropertyInitializer(acorn);
+acorn = require('acorn-es7')(acorn)
+// acorn = require('acorn-es7-plugin')(acorn);
+acorn = require('acorn-stage3/inject')(acorn);
 
+const Utils = require('./utils');
 const Types = {
     JSXText: 'JSXText',
     JSXAttribute: 'JSXAttribute',
@@ -22,7 +33,7 @@ function getJSFileList(root) {
         if (!stat.isDirectory() && /\.js$/.test(pathname)) {
             res.push(pathname);
         } else if (stat.isDirectory()) {
-            console.log('pathname', pathname)
+            // console.log('pathname', pathname)
             res = res.concat(getJSFileList(pathname));
         }
     });
@@ -37,7 +48,7 @@ module.exports = async (params) => {
     const localToolsPath = params.localTools || '~/locale-tools';
     const target = path.resolve(process.cwd(), params.target);
 
-    function isChinaCall(node, meta, file, nameMapping) {
+    function isChinaCall(node, file, nameMapping) {
         const Names = {
             formatMessage: nameMapping['formatMessage'] || 'formatMessage',
             FormattedMessage: nameMapping['FormattedMessage'] || 'FormattedMessage',
@@ -51,8 +62,8 @@ module.exports = async (params) => {
             return {
                 isComponent: !isJSXAttribute,
                 attr: attr,
-                start: meta.start.offset,
-                end: meta.end.offset,
+                start: node.start,
+                end: node.end,
                 hasImported: hasImported,
                 value: value,
                 file: file,
@@ -128,10 +139,10 @@ module.exports = async (params) => {
 
             let validId = datas.id;
 
-            if((validId in chinaJSON) && (chinaJSON[validId] !== words)){
-                if(duplicateKeys[validId]){
+            if ((validId in chinaJSON) && (chinaJSON[validId] !== words)) {
+                if (duplicateKeys[validId]) {
                     duplicateKeys[validId] += 1;
-                }else{
+                } else {
                     duplicateKeys[validId] = 1;
                 }
                 validId = `${validId}-${duplicateKeys[datas.id]}`;
@@ -162,35 +173,74 @@ module.exports = async (params) => {
 
             const entries = [];
             const fileContent = fs.readFileSync(file, 'UTF8');
-            let source = fileContent.replace(/@/g, '');
+            // let source = fileContent.replace(/@/g, '');
+            let source = fileContent;
             let hasImported = false;
             let importMeta = null;
             const importToolNames = [];
             const nameMapping = {};
 
             try {
-
-                esprima.parseModule(source, { jsx: true, tokens: true }, function (node, meta) {
-                    if (!hasImported) {
-                        hasImported = (node.type === 'ImportDeclaration' && node.source.value === localToolsPath);
-                        if (hasImported) {
-                            node.specifiers.forEach(spec => {
-                                nameMapping[spec.imported.name] = spec.local.name;
-                                importToolNames.push(`${spec.imported.name}${spec.imported.name !== spec.local.name ? ` as ${spec.local.name}` : ''}`);
-                            });
-
-                            importMeta = {
-                                start: meta.start.offset,
-                                end: meta.end.offset,
-                            }
-                        }
-                    }
-
-                    const call = isChinaCall(node, meta, file, nameMapping);
-                    if (call) {
-                        entries.push(call);
-                    }
+                const astTree = acorn.parse(source, {
+                    sourceType: 'module',
+                    plugins: {
+                        jsx: {
+                            allowNamespacedObjects: true
+                        },
+                        objectRestSpread: true,
+                        staticClassPropertyInitializer: true,
+                        es7:true,
+                        stage3: true
+                    },
+                    ecmaVersion:7
                 });
+                console.log(JSON.stringify(astTree));
+                // walk.full((astTree), node => {
+                        // console.log(node);
+                        // return;
+                        // console.log(`Found a literal: `, node);
+                        // if (!hasImported) {
+                        //     hasImported = (node.type === 'ImportDeclaration' && node.source.value === localToolsPath);
+                        //     if (hasImported) {
+                        //         console.log(node);
+                        //         node.specifiers.forEach(spec => {
+                        //             nameMapping[spec.imported.name] = spec.local.name;
+                        //             importToolNames.push(`${spec.imported.name}${spec.imported.name !== spec.local.name ? ` as ${spec.local.name}` : ''}`);
+                        //         });
+                        //         importMeta = {
+                        //             start: node.start,
+                        //             end: node.end,
+                        //         }
+                        //     }
+                        // }
+    
+                        // const call = isChinaCall(node, file, nameMapping);
+                        // if (call) {
+                        //     entries.push(call);
+                        // }
+                // });
+                console.log('entries', entries)
+                // esprima.parseModule(source, { jsx: true }, function (node, meta) {
+                //     if (!hasImported) {
+                //         hasImported = (node.type === 'ImportDeclaration' && node.source.value === localToolsPath);
+                //         if (hasImported) {
+                //             node.specifiers.forEach(spec => {
+                //                 nameMapping[spec.imported.name] = spec.local.name;
+                //                 importToolNames.push(`${spec.imported.name}${spec.imported.name !== spec.local.name ? ` as ${spec.local.name}` : ''}`);
+                //             });
+
+                //             importMeta = {
+                //                 start: meta.start.offset,
+                //                 end: meta.end.offset,
+                //             }
+                //         }
+                //     }
+
+                //     const call = isChinaCall(node, meta, file, nameMapping);
+                //     if (call) {
+                //         entries.push(call);
+                //     }
+                // });
 
                 await asyncForEach(entries, async entry => {
                     entry.id = await getId(entry.value, entry.file);
@@ -235,11 +285,11 @@ module.exports = async (params) => {
                 if (finalImport && !hasImported) {
                     source = finalImport + source;
                 }
-                if(sortedEntries.length){
+                if (sortedEntries.length) {
                     Utils.writeSync(path.resolve(srcTarget, path.relative(baseFolder, file)), source);
                 }
             } catch (e) {
-                console.log(`解析文件失败：${file}`);
+                console.log(`解析文件失败：${file}`, e);
             }
         });
     });

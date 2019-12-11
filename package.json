@@ -49,8 +49,14 @@
     "prettier": "^1.16.4"
   },
   "dependencies": {
-    "esprima": "^4.0.1",
-    "puppeteer": "^2.0.0",
-    "puppeteer-core": "^2.0.0"
+    "acorn": "^5.7.3",
+    "acorn-es7": "^0.1.0",
+    "acorn-es7-plugin": "^1.1.7",
+    "acorn-jsx": "^4.1.1",
+    "acorn-object-rest-spread": "^1.1.0",
+    "acorn-stage3": "^0.6.0",
+    "acorn-static-class-property-initializer": "^1.0.0",
+    "acorn-walk": "^7.0.0",
+    "puppeteer": "^2.0.0"
   }
 }
