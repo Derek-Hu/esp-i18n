@@ -1,5 +1,5 @@
 
-自动扫描目录，生成国际化代码及配置
+Scan source code, generate zh_CN and en_US locale file && rewrite source code.
 
 ```js
 const i18n = require('esp-i18n');

@@ -10,14 +10,11 @@ const path = require('path');
 
 const puppeteer = require('puppeteer');
 
-const esprima = require('esprima');
+const traverse = require("@babel/traverse").default;
+
+const babelParser = require("@babel/parser");
 
 const Utils = require('./utils');
-
-const Types = {
-  JSXText: 'JSXText',
-  JSXAttribute: 'JSXAttribute'
-};
 
 function isChineaseText(value) {
   return /[\u4e00-\u9fa5]/.test(value);
@@ -33,7 +30,6 @@ function getJSFileList(root) {
     if (!stat.isDirectory() && /\.js$/.test(pathname)) {
       res.push(pathname);
     } else if (stat.isDirectory()) {
-      console.log('pathname', pathname);
       res = res.concat(getJSFileList(pathname));
     }
   });
@@ -46,34 +42,13 @@ function () {
   var _ref = _asyncToGenerator(function* (params) {
     const folders = params.folders || [];
     const baseFolder = process.cwd();
+    const srcTarget = path.resolve(process.cwd(), params.srcCopyFolder || '');
     const localToolsPath = params.localTools || '~/locale-tools';
     const target = path.resolve(process.cwd(), params.target);
-
-    function isChinaCall(node, meta, file, nameMapping) {
-      const Names = {
-        formatMessage: nameMapping['formatMessage'] || 'formatMessage',
-        FormattedMessage: nameMapping['FormattedMessage'] || 'FormattedMessage'
-      };
-      const hasImported = node.type === 'ImportDeclaration' && node.source.value === localToolsPath;
-      const type = Types[node.type];
-      const value = type && type === 'JSXAttribute' ? node.value.value : node.value;
-      const isJSXAttribute = type === 'JSXAttribute';
-      const attr = isJSXAttribute ? node.name.name : null;
-
-      if (type && isChineaseText(value)) {
-        return {
-          isComponent: !isJSXAttribute,
-          attr: attr,
-          start: meta.start.offset,
-          end: meta.end.offset,
-          hasImported: hasImported,
-          value: value,
-          file: file,
-          getReplacement: id => isJSXAttribute ? `${attr}={${Names['formatMessage']}({id: '${id}'})}` : `<${Names['FormattedMessage']} id="${id}" />`
-        };
-      }
-    }
-
+    const Types = {
+      jsFunc: params.jsName || 'formatMessage',
+      compName: params.componentName || 'FormattedMessage'
+    };
     const browser = yield puppeteer.launch({
       headless: params.headless !== false
     });
@@ -90,6 +65,7 @@ function () {
     });
     const englishJSON = {};
     const chinaJSON = {};
+    const duplicateKeys = {};
 
     function translation(_x2) {
       return _translation.apply(this, arguments);
@@ -102,7 +78,7 @@ function () {
           waitUntil: 'networkidle0'
         });
         yield page.reload();
-        yield page.waitForFunction(selector => !!document.querySelector(selector), {}, selector); // await page.reload();
+        yield page.waitForFunction(selector => !!document.querySelector(selector), {}, selector);
 
         try {
           const datas = yield page.evaluate(() => {
@@ -145,9 +121,21 @@ function () {
               english: translation
             };
           }, {});
-          chinaJSON[datas.id] = words;
-          englishJSON[datas.id] = datas.english;
-          return datas && datas.id ? datas.id : words;
+          let validId = datas.id;
+
+          if (validId in chinaJSON && chinaJSON[validId] !== words) {
+            if (duplicateKeys[validId]) {
+              duplicateKeys[validId] += 1;
+            } else {
+              duplicateKeys[validId] = 1;
+            }
+
+            validId = `${validId}-${duplicateKeys[datas.id]}`;
+          }
+
+          chinaJSON[validId] = words;
+          englishJSON[validId] = datas.english;
+          return validId;
         } catch (e) {
           console.log(e);
           return words;
@@ -156,34 +144,19 @@ function () {
       return _translation.apply(this, arguments);
     }
 
-    function getId(_x3, _x4) {
+    function getId(_x3) {
       return _getId.apply(this, arguments);
     }
 
     function _getId() {
-      _getId = _asyncToGenerator(function* (value, file) {
-        const relativePath = path.relative(baseFolder, file);
-        const parts = relativePath.split(/[\\\/]/);
-        const name = parts.reduce((names, part, index) => {
-          if (index === 0) {
-            if (part === 'src') {
-              return names;
-            }
-
-            names.push(part);
-          } else {
-            names.push(part[0] + part.substring(1));
-          }
-
-          return names;
-        }, []).join('-');
+      _getId = _asyncToGenerator(function* (value) {
         const id = yield translation(value);
-        return `${name.replace(/\.js$/, '')}.${id ? id : value}`;
+        return `${id ? id : value}`;
       });
       return _getId.apply(this, arguments);
     }
 
-    function asyncForEach(_x5, _x6) {
+    function asyncForEach(_x4, _x5) {
       return _asyncForEach.apply(this, arguments);
     }
 
@@ -205,39 +178,113 @@ function () {
         /*#__PURE__*/
         function () {
           var _ref4 = _asyncToGenerator(function* (file) {
+            // exclude generated files
+            if (file.indexOf(target) === 0) {
+              return;
+            }
+
             const entries = [];
-            let source = fs.readFileSync(file, 'UTF8').replace(/@/g, '');
+            const fileContent = fs.readFileSync(file, 'UTF8');
+            let source = fileContent;
             let hasImported = false;
             let importMeta = null;
             const importToolNames = [];
             const nameMapping = {};
 
             try {
-              esprima.parseModule(source, {
-                jsx: true,
-                tokens: true
-              }, function (node, meta) {
-                if (!hasImported) {
-                  hasImported = node.type === 'ImportDeclaration' && node.source.value === localToolsPath;
-
-                  if (hasImported) {
-                    node.specifiers.forEach(spec => {
-                      nameMapping[spec.imported.name] = spec.local.name;
-                      importToolNames.push(`${spec.imported.name}${spec.imported.name !== spec.local.name ? ` as ${spec.local.name}` : ''}`);
-                    });
-                    importMeta = {
-                      start: meta.start.offset,
-                      end: meta.end.offset
-                    };
+              const astTree = babelParser.parse(source, {
+                sourceType: 'unambiguous',
+                plugins: ['jsx', 'typescript', ['decorators', {
+                  decoratorsBeforeExport: true
+                }]]
+              });
+              traverse(astTree, {
+                StringLiteral(_node) {
+                  if (['ImportDeclaration', 'JSXAttribute', 'JSXText'].includes(_node.parent.type)) {
+                    return;
                   }
-                }
 
-                const call = isChinaCall(node, meta, file, nameMapping);
+                  const node = _node.node;
+                  const value = node.value;
 
-                if (call) {
+                  if (!isChineaseText(value)) {
+                    return;
+                  }
+
+                  const funcName = nameMapping[Types.jsFunc] || Types.jsFunc;
+                  const call = {
+                    isComponent: false,
+                    start: node.start,
+                    end: node.end,
+                    value: value,
+                    file: file,
+                    getReplacement: id => `${funcName}({id: '${id}'})`
+                  };
+                  entries.push(call);
+                },
+
+                ImportDeclaration(_node) {
+                  const node = _node.node; // console.log('ImportDeclaration', JSON.stringify(node));
+
+                  if (!hasImported) {
+                    hasImported = node.type === 'ImportDeclaration' && node.source.value === localToolsPath;
+
+                    if (hasImported) {
+                      node.specifiers.forEach(spec => {
+                        nameMapping[spec.imported.name] = spec.local.name;
+                        importToolNames.push(`${spec.imported.name}${spec.imported.name !== spec.local.name ? ` as ${spec.local.name}` : ''}`);
+                      });
+                      importMeta = {
+                        start: node.start,
+                        end: node.end
+                      };
+                    }
+                  }
+                },
+
+                JSXAttribute(_node) {
+                  const node = _node.node;
+                  const value = node.value.value;
+
+                  if (!isChineaseText(value)) {
+                    return;
+                  }
+
+                  const funcName = nameMapping[Types.jsFunc] || Types.jsFunc;
+                  const attr = node.name.name;
+                  const call = {
+                    isComponent: false,
+                    start: node.start,
+                    end: node.end,
+                    value: value,
+                    file: file,
+                    getReplacement: id => `${attr}={${funcName}({id: '${id}'})}`
+                  };
+                  entries.push(call);
+                },
+
+                JSXText(_node) {
+                  const node = _node.node;
+                  const value = node.value;
+
+                  if (!isChineaseText(value)) {
+                    return;
+                  }
+
+                  const funcName = nameMapping[Types.compName] || Types.compName;
+                  const call = {
+                    isComponent: true,
+                    start: node.start,
+                    end: node.end,
+                    value: value,
+                    file: file,
+                    getReplacement: id => `<${funcName} id="${id}" />`
+                  };
                   entries.push(call);
                 }
-              });
+
+              }); // console.log('entries', entries);
+
               yield asyncForEach(entries,
               /*#__PURE__*/
               function () {
@@ -245,17 +292,16 @@ function () {
                   entry.id = yield getId(entry.value, entry.file);
                 });
 
-                return function (_x9) {
+                return function (_x8) {
                   return _ref5.apply(this, arguments);
                 };
               }()); // 动态计算 import { formatMessage, FormattedMessage } from ${localToolsPath};
 
               const hasJSToolImport = entries.some(entry => !entry.isComponent);
               const hasCompToolImport = entries.some(entry => entry.isComponent);
-              const metas = {
-                formatMessage: hasJSToolImport,
-                FormattedMessage: hasCompToolImport
-              };
+              const metas = {};
+              metas[Types.jsFunc] = hasJSToolImport;
+              metas[Types.compName] = hasCompToolImport;
               Object.keys(metas).forEach(key => {
                 if (metas[key]) {
                   let statement = null;
@@ -295,19 +341,21 @@ function () {
                 source = finalImport + source;
               }
 
-              Utils.writeSync(file, source);
+              if (sortedEntries.length) {
+                Utils.writeSync(path.resolve(srcTarget, path.relative(baseFolder, file)), source);
+              }
             } catch (e) {
-              console.log(`解析文件失败：${file}`);
+              console.log(`解析文件失败：${file}`, e);
             }
           });
 
-          return function (_x8) {
+          return function (_x7) {
             return _ref4.apply(this, arguments);
           };
         }());
       });
 
-      return function (_x7) {
+      return function (_x6) {
         return _ref3.apply(this, arguments);
       };
     }());
