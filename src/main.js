@@ -6,7 +6,7 @@ const babelParser = require("@babel/parser");
 const Utils = require('./utils');
 
 function isChineaseText(value) {
-    return /[\u4e00-\u9fa5]/.test(value);
+    return value && /[\u4e00-\u9fa5]/.test(value);
 }
 function getJSFileList(root) {
     let res = [];
@@ -31,6 +31,10 @@ module.exports = async (params) => {
     const srcTarget = path.resolve(process.cwd(), params.srcCopyFolder || '');
     const localToolsPath = params.localTools || '~/locale-tools';
     const target = path.resolve(process.cwd(), params.target);
+    const excludesFolders = params.excludes || [];
+
+    const excludes = excludesFolders.map(exclude => path.resolve(process.cwd(), exclude));
+    excludes.push(target);
 
     const Types = {
         jsFunc: params.jsName || 'formatMessage',
@@ -132,9 +136,16 @@ module.exports = async (params) => {
     await asyncForEach(folders, async folder => {
         const jsFiles = getJSFileList(path.resolve(baseFolder, folder));
         await asyncForEach(jsFiles, async file => {
+            console.log('Parse: '+file);
+
+            console.log('excludes: '+excludes)
 
             // exclude generated files
-            if(file.indexOf(target)===0){
+            const isExcludes = excludes.some(exclude => {
+                return file.indexOf(exclude)===0;
+            });
+            if(isExcludes){
+                console.log('Exclude:' +file);
                 return;
             }
             const entries = [];
@@ -151,7 +162,8 @@ module.exports = async (params) => {
                     plugins: [
                         'jsx',
                         'typescript',
-                        ['decorators', { decoratorsBeforeExport: true }]
+                        ['decorators', { decoratorsBeforeExport: true }],
+                        'classProperties'
                     ],
                 });
                 traverse(astTree, {
@@ -194,7 +206,8 @@ module.exports = async (params) => {
                     },
                     JSXAttribute(_node) {
                         const node = _node.node;
-                        const value = node.value.value;
+                        // console.log('')
+                        const value = node.value && node.value.value;
                         if (!isChineaseText(value)) {
                             return;
                         }

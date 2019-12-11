@@ -7,6 +7,8 @@ const i18n = require('esp-i18n');
 i18n({
     // Folder Scan
     folders : ['src/components', 'src/pages'],
+    // Exclude folder
+    excludes: ['src/api'],
     // import { FormattedMessage, formatMessage } from '~/locale-tools';
     localTools : '~/locale-tools',
 
