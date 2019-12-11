@@ -163,7 +163,17 @@ module.exports = async (params) => {
                         'jsx',
                         'typescript',
                         ['decorators', { decoratorsBeforeExport: true }],
-                        'classProperties'
+                        'asyncGenerators',
+                        'bigInt',
+                        'classProperties',
+                        'classPrivateProperties',
+                        'dynamicImport',
+                        'exportDefaultFrom',
+                        'exportNamespaceFrom',
+                        'objectRestSpread',
+                        'optionalCatchBinding',
+                        'throwExpressions',
+                        'topLevelAwait'
                     ],
                 });
                 traverse(astTree, {
