@@ -11,6 +11,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "esp-i18n": "^1.0.3"
+    "@types/react": "^16.9.16",
+    "esp-i18n": "^1.0.3",
+    "react": "^16.12.0"
   }
 }

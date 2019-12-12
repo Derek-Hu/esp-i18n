@@ -8,4 +8,4 @@ i18n({
     componentName: 'Translation',
     target: 'locale',
     headless: false,
-})
+});
