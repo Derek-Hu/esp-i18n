@@ -108,7 +108,6 @@ module.exports = async (params) => {
 
                 const translationEle = document.querySelector('p.ordinary-output.target-output');
                 const translation = translationEle.textContent.trim();
-
                 if (translatedId) {
                     return {
                         id: translatedId,
@@ -123,7 +122,7 @@ module.exports = async (params) => {
                 const translationParts = translation.split(' ');
                 if (translationParts.length <= maxWords) {
                     id = formatWord(translation);
-                } else if (keyMeans) {
+                } else if (keyMeans && keyMeans.length) {
                     const allFirstMeans = keyMeans.map(means => {
                         const firstMeans = means.split(';');
                         if (firstMeans && firstMeans[0]) {
@@ -147,6 +146,7 @@ module.exports = async (params) => {
                         means.push(formatWord(word));
                         return means;
                     }, []).join('-');
+                    
                 }
                 return {
                     id: id,
