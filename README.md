@@ -37,7 +37,7 @@ i18n({
     //srcCopyFolder: 'dist',
 })
 ```
-支持中文翻译的语言列表见：https://github.com/Derek-Hu/esp-i18n/blob/master/src/languages.js
+支持中文翻译的语言列表见：[https://github.com/Derek-Hu/esp-i18n/blob/master/src/languages.js](https://github.com/Derek-Hu/esp-i18n/blob/master/src/languages.js)
 
 源代码: 
 ```js
