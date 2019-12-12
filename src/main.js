@@ -358,13 +358,13 @@ module.exports = async (params) => {
                     source = finalImport + source;
                 }
                 if (sortedEntries.length) {
-                    Utils.writeSync(path.resolve(srcTarget, path.relative(baseFolder, file)), source);
                     Object.keys(TranslationContainer).forEach(language => {
                         if (!hasEnglish && language === 'en') {
                             return;
                         }
                         Utils.writeSync(path.resolve(target, `${language}.js`), `${Constant.Header}${JSON.stringify(TranslationContainer[language], null, 2)}`);
                     });
+                    Utils.writeSync(path.resolve(srcTarget, path.relative(baseFolder, file)), source);
                 }
             } catch (e) {
                 console.log(`解析文件失败：${file}`, e);
