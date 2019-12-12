@@ -39,7 +39,7 @@ i18n({
 ```js
 import React from 'react';
 import ErrorPage from '~/components/error-page';
-import Controller from 'Controller';
+import Controller from '~Controller';
 
 @Controller('/403', {
   title: '访问拒绝',
