@@ -5,6 +5,8 @@ const traverse = require("@babel/traverse").default;
 const babelParser = require("@babel/parser");
 const Utils = require('./utils');
 const LanguageMapping = require('./languages');
+const Constant = require('./constant');
+const loadLocales = require('./load');
 
 function isChineaseText(value) {
     return value && /[\u4e00-\u9fa5]/.test(value);
@@ -40,7 +42,7 @@ module.exports = async (params) => {
     const baseFolder = process.cwd();
     const srcTarget = path.resolve(process.cwd(), params.srcCopyFolder || '');
     const localToolsPath = params.localTools || 'umi-plugin-locale';
-    const target = path.resolve(process.cwd(), params.target) || 'src/locale';
+    const target = path.resolve(process.cwd(), params.target || 'src/locale');
     const excludesFolders = params.excludes || [];
     const translateLanguages = params.translate && params.translate.length ? params.translate : ['en'];
 
@@ -91,7 +93,10 @@ module.exports = async (params) => {
         deviceScaleFactor: 1,
     });
 
-    const TranslationContainer = { zh: {}, en: {} };
+    const TranslationContainer = loadLocales(translateLanguages, target, LanguageMapping);
+    if(!TranslationContainer['zh']){
+        TranslationContainer['zh'] = {};
+    }
     const chinaValueKeyMapping = {};
     const duplicateKeys = {};
     const waitOptions = { waitUntil: 'networkidle0' };
@@ -106,7 +111,7 @@ module.exports = async (params) => {
             await page.waitForFunction(selector => !!document.querySelector(selector), {}, selector);
             const datas = await page.evaluate((translatedId) => {
                 function formatWord(word) {
-                    return word.toLowerCase().replace(/[,.:']/g, '').trim().replace(/\s/g, '-');
+                    return word.toLowerCase().replace(/[,.:/|']/g, '').trim().replace(/\s/g, '-');
                 }
                 const maxWords = 4;
                 const keywordsSelector = 'ul.keywords-container li.keywords-content .keywords-means';
@@ -362,7 +367,7 @@ module.exports = async (params) => {
         if (!hasEnglish && language === 'en') {
             return;
         }
-        Utils.writeSync(path.resolve(target, `${language}.js`), `export default ${JSON.stringify(TranslationContainer[language], null, 2)}`);
+        Utils.writeSync(path.resolve(target, `${language}.js`), `${Constant.Header}${JSON.stringify(TranslationContainer[language], null, 2)}`);
     })
 
     await browser.close();
