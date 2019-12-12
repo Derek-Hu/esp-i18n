@@ -1,0 +1,16 @@
+{
+  "name": "i18n-extract",
+  "version": "1.0.0",
+  "description": "示例代码：自动提取中文至zh_CN.js、en_US.js，并修改源代码",
+  "main": "output.js",
+  "scripts": {
+    "output": "node tool/output.js",
+    "overide": "node tool/overide.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "esp-i18n": "^1.0.3"
+  }
+}

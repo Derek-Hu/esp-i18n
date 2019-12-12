@@ -36,6 +36,8 @@ module.exports = async (params) => {
     const excludes = excludesFolders.map(exclude => path.resolve(process.cwd(), exclude));
     excludes.push(target);
 
+    console.log('Excludes: '+excludes);
+
     const Types = {
         jsFunc: params.jsName || 'formatMessage',
         compName: params.componentName || 'FormattedMessage'
@@ -57,6 +59,7 @@ module.exports = async (params) => {
 
     const englishJSON = {};
     const chinaJSON = {};
+    const chinaValueKeyMapping = {};
     const duplicateKeys = {};
 
     async function translation(words) {
@@ -114,6 +117,7 @@ module.exports = async (params) => {
                 validId = `${validId}-${duplicateKeys[datas.id]}`;
             }
             chinaJSON[validId] = words;
+            chinaValueKeyMapping[words] = validId;
             englishJSON[validId] = datas.english;
             return validId;
         } catch (e) {
@@ -137,15 +141,10 @@ module.exports = async (params) => {
         const jsFiles = getJSFileList(path.resolve(baseFolder, folder));
         await asyncForEach(jsFiles, async file => {
             console.log('Parse: '+file);
-
-            console.log('excludes: '+excludes)
-
-            // exclude generated files
             const isExcludes = excludes.some(exclude => {
                 return file.indexOf(exclude)===0;
             });
             if(isExcludes){
-                console.log('Exclude:' +file);
                 return;
             }
             const entries = [];
@@ -159,6 +158,7 @@ module.exports = async (params) => {
             try {
                 const astTree = babelParser.parse(source, {
                     sourceType: 'unambiguous',
+                    // https://babeljs.io/docs/en/next/babel-parser#ECMAScript-proposals
                     plugins: [
                         'jsx',
                         'typescript',
@@ -199,7 +199,6 @@ module.exports = async (params) => {
                     },
                     ImportDeclaration(_node) {
                         const node = _node.node;
-                        // console.log('ImportDeclaration', JSON.stringify(node));
                         if (!hasImported) {
                             hasImported = (node.type === 'ImportDeclaration' && node.source.value === localToolsPath);
                             if (hasImported) {
@@ -216,7 +215,6 @@ module.exports = async (params) => {
                     },
                     JSXAttribute(_node) {
                         const node = _node.node;
-                        // console.log('')
                         const value = node.value && node.value.value;
                         if (!isChineaseText(value)) {
                             return;
@@ -254,10 +252,16 @@ module.exports = async (params) => {
                         entries.push(call);
                     }
                 });
-                // console.log('entries', entries);
 
                 await asyncForEach(entries, async entry => {
-                    entry.id = await getId(entry.value, entry.file);
+                    if(entry.value){
+                        entry.value = entry.value.trim();
+                    }
+                    if(chinaValueKeyMapping[entry.value]!==undefined){
+                        entry.id = chinaValueKeyMapping[entry.value];
+                    }else{
+                        entry.id = await getId(entry.value, entry.file);
+                    }
                 });
                 // 动态计算 import { formatMessage, FormattedMessage } from ${localToolsPath};
                 const hasJSToolImport = entries.some(entry => !entry.isComponent);

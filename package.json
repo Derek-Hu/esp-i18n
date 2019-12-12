@@ -1,6 +1,6 @@
 {
   "name": "esp-i18n",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "main": "src/main.js",
   "description": "Extract locale files and rewrite source code for i18n",
   "scripts": {
@@ -16,9 +16,16 @@
   },
   "keywords": [
     "i18n",
+    "l10n",
+    "internationalization",
     "react",
+    "angular",
+    "typescript",
+    "ts",
+    "js",
+    "javascript",
     "locale",
-    "extract"
+    "template"
   ],
   "author": "hubenlv",
   "license": "MIT",
