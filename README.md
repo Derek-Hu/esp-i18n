@@ -2,7 +2,7 @@
 
 使用Babel进行语法分析，并使用百度翻译自动生成国际化id属性；
 
-支持ES6、TS等语法
+支持ES6、TS等语法，支持React、Angular等JS代码。
 
 Example: https://github.com/Derek-Hu/esp-i18n/tree/master/examples/i18n-extract
 
@@ -39,7 +39,7 @@ i18n({
 ```js
 import React from 'react';
 import ErrorPage from '~/components/error-page';
-import Controller from '~Controller';
+import Controller from 'meta.macro';
 
 @Controller('/403', {
   title: '访问拒绝',
@@ -58,7 +58,7 @@ export default class ErrorPage403 extends React.Component {
 import { formatMessage, FormattedMessage } from '~/locale-tools';
 import React from 'react';
 import ErrorPage from '~/components/error-page';
-import Controller from '~/Controller';
+import Controller from 'meta.macro';
 
 @Controller('/403', {
   title: formatMessage({id: 'access-denied'}),
