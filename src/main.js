@@ -46,6 +46,8 @@ module.exports = async (params) => {
     const excludesFolders = params.excludes || [];
     const translateLanguages = params.translate && params.translate.length ? params.translate : ['en'];
 
+    const hasEnglish = translateLanguages.indexOf('en') !== -1;
+
     const excludes = excludesFolders.map(exclude => path.resolve(process.cwd(), exclude));
     excludes.push(target);
 
@@ -97,13 +99,16 @@ module.exports = async (params) => {
     if(!TranslationContainer['zh']){
         TranslationContainer['zh'] = {};
     }
-    const chinaValueKeyMapping = {};
+    const chinaValueKeyMapping = Object.keys(TranslationContainer['zh']).reduce((all, chinaId)=> {
+        all[TranslationContainer['zh'][chinaId]] = chinaId;
+        return all;
+    }, {});
+
     const duplicateKeys = {};
     const waitOptions = { waitUntil: 'networkidle0' };
     async function translation(words, language, translationId) {
         
         const transformdWords = words ? words.replace(/\%/g, '') : '';
-        
         const selector = 'p.ordinary-output.target-output';
         try {
             await page.goto(`https://fanyi.baidu.com/#zh/${language}/${decodeURIComponent(transformdWords)}`, waitOptions);
@@ -353,22 +358,19 @@ module.exports = async (params) => {
                     source = finalImport + source;
                 }
                 if (sortedEntries.length) {
-                    // console.log('解析完成: ' + file);
                     Utils.writeSync(path.resolve(srcTarget, path.relative(baseFolder, file)), source);
+                    Object.keys(TranslationContainer).forEach(language => {
+                        if (!hasEnglish && language === 'en') {
+                            return;
+                        }
+                        Utils.writeSync(path.resolve(target, `${language}.js`), `${Constant.Header}${JSON.stringify(TranslationContainer[language], null, 2)}`);
+                    });
                 }
             } catch (e) {
                 console.log(`解析文件失败：${file}`, e);
             }
         });
     });
-
-    const hasEnglish = translateLanguages.indexOf('en') !== -1;
-    Object.keys(TranslationContainer).forEach(language => {
-        if (!hasEnglish && language === 'en') {
-            return;
-        }
-        Utils.writeSync(path.resolve(target, `${language}.js`), `${Constant.Header}${JSON.stringify(TranslationContainer[language], null, 2)}`);
-    })
 
     await browser.close();
 }
