@@ -33,6 +33,9 @@ i18n({
     // 是否打开浏览器，可查看自动抓取翻译等效果，若浏览器页面出现卡顿，在此模式下则可人工干预；默认为关闭
     // headless: false,
 
+    // 代码为Flow类型，而非Typescript
+    // isFlow: true,
+
     // 指定保存修改后的代码路径，默认为覆盖源文件
     //srcCopyFolder: 'dist',
 })

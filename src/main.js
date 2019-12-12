@@ -6,27 +6,6 @@ const babelParser = require("@babel/parser");
 const Utils = require('./utils');
 const LanguageMapping = require('./languages');
 
-const PluginOptions = {
-    sourceType: 'unambiguous',
-    // https://babeljs.io/docs/en/next/babel-parser#ECMAScript-proposals
-    plugins: [
-        'jsx',
-        'typescript',
-        ['decorators', { decoratorsBeforeExport: true }],
-        'asyncGenerators',
-        'bigInt',
-        'classProperties',
-        'classPrivateProperties',
-        'dynamicImport',
-        'exportDefaultFrom',
-        'exportNamespaceFrom',
-        'objectRestSpread',
-        'optionalCatchBinding',
-        'throwExpressions',
-        'topLevelAwait'
-    ],
-};
-
 function isChineaseText(value) {
     return value && /[\u4e00-\u9fa5]/.test(value);
 }
@@ -54,6 +33,9 @@ async function asyncForEach(array, callback) {
 }
 
 module.exports = async (params) => {
+    if(!params){
+        params = {};
+    }
     const folders = params.folders || [];
     const baseFolder = process.cwd();
     const srcTarget = path.resolve(process.cwd(), params.srcCopyFolder || '');
@@ -66,6 +48,29 @@ module.exports = async (params) => {
     excludes.push(target);
 
     console.log('Excludes: ' + excludes);
+
+    const isFlow = params.isFlow === true;
+
+    const PluginOptions = {
+        sourceType: 'unambiguous',
+        // https://babeljs.io/docs/en/next/babel-parser#ECMAScript-proposals
+        plugins: [
+            'jsx',
+            isFlow? 'flow':'typescript',
+            ['decorators', { decoratorsBeforeExport: true }],
+            'asyncGenerators',
+            'bigInt',
+            'classProperties',
+            'classPrivateProperties',
+            'dynamicImport',
+            'exportDefaultFrom',
+            'exportNamespaceFrom',
+            'objectRestSpread',
+            'optionalCatchBinding',
+            'throwExpressions',
+            'topLevelAwait'
+        ],
+    };
 
     const Types = {
         jsFunc: params.jsName || 'formatMessage',
@@ -343,7 +348,7 @@ module.exports = async (params) => {
                     source = finalImport + source;
                 }
                 if (sortedEntries.length) {
-                    console.log('解析完成: ' + file);
+                    // console.log('解析完成: ' + file);
                     Utils.writeSync(path.resolve(srcTarget, path.relative(baseFolder, file)), source);
                 }
             } catch (e) {
