@@ -6,6 +6,27 @@ const babelParser = require("@babel/parser");
 const Utils = require('./utils');
 const LanguageMapping = require('./languages');
 
+const PluginOptions = {
+    sourceType: 'unambiguous',
+    // https://babeljs.io/docs/en/next/babel-parser#ECMAScript-proposals
+    plugins: [
+        'jsx',
+        'typescript',
+        ['decorators', { decoratorsBeforeExport: true }],
+        'asyncGenerators',
+        'bigInt',
+        'classProperties',
+        'classPrivateProperties',
+        'dynamicImport',
+        'exportDefaultFrom',
+        'exportNamespaceFrom',
+        'objectRestSpread',
+        'optionalCatchBinding',
+        'throwExpressions',
+        'topLevelAwait'
+    ],
+};
+
 function isChineaseText(value) {
     return value && /[\u4e00-\u9fa5]/.test(value);
 }
@@ -68,42 +89,41 @@ module.exports = async (params) => {
     const TranslationContainer = { zh: {}, en: {} };
     const chinaValueKeyMapping = {};
     const duplicateKeys = {};
-
-    let firstReload = false;
-    
+    const waitOptions = { waitUntil: 'networkidle0' };
     async function translation(words, language, translationId) {
+        
+        const transformdWords = words ? words.replace(/\%/g, '') : '';
+        
         const selector = 'p.ordinary-output.target-output';
-        await page.goto(`https://fanyi.baidu.com/#zh/${language}/${decodeURIComponent(words)}`, { waitUntil: 'networkidle0' });
-        if(!firstReload){
-            await page.reload();
-            firstReload=true;
-        }
-        await page.waitForFunction(selector => !!document.querySelector(selector), {}, selector);
         try {
+            await page.goto(`https://fanyi.baidu.com/#zh/${language}/${decodeURIComponent(transformdWords)}`, waitOptions);
+            await page.reload();
+            await page.waitForFunction(selector => !!document.querySelector(selector), {}, selector);
             const datas = await page.evaluate((translatedId) => {
                 function formatWord(word) {
                     return word.toLowerCase().replace(/[,.:']/g, '').trim().replace(/\s/g, '-');
                 }
-                const translationEle = document.querySelector("p.ordinary-output.target-output");
+                const maxWords = 4;
+                const keywordsSelector = 'ul.keywords-container li.keywords-content .keywords-means';
+
+                const translationEle = document.querySelector('p.ordinary-output.target-output');
                 const translation = translationEle.textContent.trim();
-                
-                debugger;
-                if(translatedId){
+
+                if (translatedId) {
                     return {
                         id: translatedId,
                         translation: translation
                     }
                 }
 
-                const keyMeansElems = document.querySelectorAll("ul.keywords-container li.keywords-content .keywords-means");
+                const keyMeansElems = document.querySelectorAll(keywordsSelector) || [];
                 const keyMeans = Array.prototype.slice.call(keyMeansElems).map(ele => ele.textContent);
 
                 let id = null;
                 const translationParts = translation.split(' ');
-                const maxWords = 4;
                 if (translationParts.length <= maxWords) {
                     id = formatWord(translation);
-                } else {
+                } else if (keyMeans) {
                     const allFirstMeans = keyMeans.map(means => {
                         const firstMeans = means.split(';');
                         if (firstMeans && firstMeans[0]) {
@@ -113,6 +133,14 @@ module.exports = async (params) => {
                     }).filter(v => v);
 
                     id = allFirstMeans.reduce((means, word, index) => {
+                        if (index >= maxWords) {
+                            return means;
+                        }
+                        means.push(formatWord(word));
+                        return means;
+                    }, []).join('-');
+                } else {
+                    id = translationParts.reduce((means, word, index) => {
                         if (index >= maxWords) {
                             return means;
                         }
@@ -137,10 +165,11 @@ module.exports = async (params) => {
                 validId = `${validId}-${duplicateKeys[datas.id]}`;
             }
 
-            if(!TranslationContainer[language]){
+            if (!TranslationContainer[language]) {
                 TranslationContainer[language] = {};
             }
-            TranslationContainer[language][translationId || validId] = datas.translation;
+
+            TranslationContainer[language][validId] = datas.translation;
 
             return validId;
         } catch (e) {
@@ -155,10 +184,10 @@ module.exports = async (params) => {
         chinaValueKeyMapping[value] = id;
 
         await asyncForEach(translateLanguages, async code => {
-            if(code==='en' || code==='zh'){
+            if (code === 'en' || code === 'zh') {
                 return;
             }
-            if(!code || !LanguageMapping[code]){
+            if (!code || !LanguageMapping[code]) {
                 console.warn(`当前暂不支持中文翻译至${code}`)
                 return;
             }
@@ -170,7 +199,6 @@ module.exports = async (params) => {
     await asyncForEach(folders, async folder => {
         const jsFiles = getJSFileList(path.resolve(baseFolder, folder));
         await asyncForEach(jsFiles, async file => {
-            console.log('Parse: ' + file);
             const isExcludes = excludes.some(exclude => {
                 return file.indexOf(exclude) === 0;
             });
@@ -186,26 +214,7 @@ module.exports = async (params) => {
             const nameMapping = {};
 
             try {
-                const astTree = babelParser.parse(source, {
-                    sourceType: 'unambiguous',
-                    // https://babeljs.io/docs/en/next/babel-parser#ECMAScript-proposals
-                    plugins: [
-                        'jsx',
-                        'typescript',
-                        ['decorators', { decoratorsBeforeExport: true }],
-                        'asyncGenerators',
-                        'bigInt',
-                        'classProperties',
-                        'classPrivateProperties',
-                        'dynamicImport',
-                        'exportDefaultFrom',
-                        'exportNamespaceFrom',
-                        'objectRestSpread',
-                        'optionalCatchBinding',
-                        'throwExpressions',
-                        'topLevelAwait'
-                    ],
-                });
+                const astTree = babelParser.parse(source, PluginOptions);
                 traverse(astTree, {
                     StringLiteral(_node) {
                         if (['ImportDeclaration', 'JSXAttribute', 'JSXText'].includes(_node.parent.type)) {
@@ -334,6 +343,7 @@ module.exports = async (params) => {
                     source = finalImport + source;
                 }
                 if (sortedEntries.length) {
+                    console.log('解析完成: ' + file);
                     Utils.writeSync(path.resolve(srcTarget, path.relative(baseFolder, file)), source);
                 }
             } catch (e) {
@@ -342,9 +352,9 @@ module.exports = async (params) => {
         });
     });
 
-    const hasEnglish = translateLanguages.indexOf('en')!==-1;
+    const hasEnglish = translateLanguages.indexOf('en') !== -1;
     Object.keys(TranslationContainer).forEach(language => {
-        if(!hasEnglish && language==='en'){
+        if (!hasEnglish && language === 'en') {
             return;
         }
         Utils.writeSync(path.resolve(target, `${language}.js`), `export default ${JSON.stringify(TranslationContainer[language], null, 2)}`);
