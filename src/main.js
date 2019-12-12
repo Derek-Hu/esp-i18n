@@ -4,6 +4,7 @@ const puppeteer = require('puppeteer');
 const traverse = require("@babel/traverse").default;
 const babelParser = require("@babel/parser");
 const Utils = require('./utils');
+const LanguageMapping = require('./languages');
 
 function isChineaseText(value) {
     return value && /[\u4e00-\u9fa5]/.test(value);
@@ -25,18 +26,25 @@ function getJSFileList(root) {
     return res;
 }
 
+async function asyncForEach(array, callback) {
+    for (let index = 0; index < array.length; index++) {
+        await callback(array[index], index, array);
+    }
+}
+
 module.exports = async (params) => {
     const folders = params.folders || [];
     const baseFolder = process.cwd();
     const srcTarget = path.resolve(process.cwd(), params.srcCopyFolder || '');
-    const localToolsPath = params.localTools || '~/locale-tools';
-    const target = path.resolve(process.cwd(), params.target);
+    const localToolsPath = params.localTools || 'umi-plugin-locale';
+    const target = path.resolve(process.cwd(), params.target) || 'src/locale';
     const excludesFolders = params.excludes || [];
+    const translateLanguages = params.translate && params.translate.length ? params.translate : ['en'];
 
     const excludes = excludesFolders.map(exclude => path.resolve(process.cwd(), exclude));
     excludes.push(target);
 
-    console.log('Excludes: '+excludes);
+    console.log('Excludes: ' + excludes);
 
     const Types = {
         jsFunc: params.jsName || 'formatMessage',
@@ -57,26 +65,38 @@ module.exports = async (params) => {
         deviceScaleFactor: 1,
     });
 
-    const englishJSON = {};
-    const chinaJSON = {};
+    const TranslationContainer = { zh: {}, en: {} };
     const chinaValueKeyMapping = {};
     const duplicateKeys = {};
 
-    async function translation(words) {
+    let firstReload = false;
+    
+    async function translation(words, language, translationId) {
         const selector = 'p.ordinary-output.target-output';
-        await page.goto(`https://fanyi.baidu.com/#zh/en/${decodeURIComponent(words)}`, { waitUntil: 'networkidle0' });
-        await page.reload();
+        await page.goto(`https://fanyi.baidu.com/#zh/${language}/${decodeURIComponent(words)}`, { waitUntil: 'networkidle0' });
+        if(!firstReload){
+            await page.reload();
+            firstReload=true;
+        }
         await page.waitForFunction(selector => !!document.querySelector(selector), {}, selector);
         try {
-            const datas = await page.evaluate(() => {
+            const datas = await page.evaluate((translatedId) => {
                 function formatWord(word) {
                     return word.toLowerCase().replace(/[,.:']/g, '').trim().replace(/\s/g, '-');
                 }
-
                 const translationEle = document.querySelector("p.ordinary-output.target-output");
+                const translation = translationEle.textContent.trim();
+                
+                debugger;
+                if(translatedId){
+                    return {
+                        id: translatedId,
+                        translation: translation
+                    }
+                }
+
                 const keyMeansElems = document.querySelectorAll("ul.keywords-container li.keywords-content .keywords-means");
                 const keyMeans = Array.prototype.slice.call(keyMeansElems).map(ele => ele.textContent);
-                const translation = translationEle.textContent.trim();
 
                 let id = null;
                 const translationParts = translation.split(' ');
@@ -102,13 +122,13 @@ module.exports = async (params) => {
                 }
                 return {
                     id: id,
-                    english: translation
+                    translation: translation
                 };
-            }, {});
+            }, translationId);
 
             let validId = datas.id;
 
-            if ((validId in chinaJSON) && (chinaJSON[validId] !== words)) {
+            if ((validId in TranslationContainer['zh']) && (TranslationContainer['zh'][validId] !== words)) {
                 if (duplicateKeys[validId]) {
                     duplicateKeys[validId] += 1;
                 } else {
@@ -116,9 +136,12 @@ module.exports = async (params) => {
                 }
                 validId = `${validId}-${duplicateKeys[datas.id]}`;
             }
-            chinaJSON[validId] = words;
-            chinaValueKeyMapping[words] = validId;
-            englishJSON[validId] = datas.english;
+
+            if(!TranslationContainer[language]){
+                TranslationContainer[language] = {};
+            }
+            TranslationContainer[language][translationId || validId] = datas.translation;
+
             return validId;
         } catch (e) {
             console.log(e);
@@ -127,24 +150,31 @@ module.exports = async (params) => {
     }
 
     async function getId(value) {
-        const id = await translation(value);
-        return `${id ? id : value}`;
-    }
+        const id = await translation(value, 'en');
+        TranslationContainer['zh'][id] = value;
+        chinaValueKeyMapping[value] = id;
 
-    async function asyncForEach(array, callback) {
-        for (let index = 0; index < array.length; index++) {
-            await callback(array[index], index, array);
-        }
+        await asyncForEach(translateLanguages, async code => {
+            if(code==='en' || code==='zh'){
+                return;
+            }
+            if(!code || !LanguageMapping[code]){
+                console.warn(`当前暂不支持中文翻译至${code}`)
+                return;
+            }
+            await translation(value, code, id);
+        })
+        return `${id ? id : value}`;
     }
 
     await asyncForEach(folders, async folder => {
         const jsFiles = getJSFileList(path.resolve(baseFolder, folder));
         await asyncForEach(jsFiles, async file => {
-            console.log('Parse: '+file);
+            console.log('Parse: ' + file);
             const isExcludes = excludes.some(exclude => {
-                return file.indexOf(exclude)===0;
+                return file.indexOf(exclude) === 0;
             });
-            if(isExcludes){
+            if (isExcludes) {
                 return;
             }
             const entries = [];
@@ -177,8 +207,8 @@ module.exports = async (params) => {
                     ],
                 });
                 traverse(astTree, {
-                    StringLiteral(_node){
-                        if(['ImportDeclaration', 'JSXAttribute', 'JSXText'].includes(_node.parent.type)){
+                    StringLiteral(_node) {
+                        if (['ImportDeclaration', 'JSXAttribute', 'JSXText'].includes(_node.parent.type)) {
                             return;
                         }
                         const node = _node.node;
@@ -254,12 +284,12 @@ module.exports = async (params) => {
                 });
 
                 await asyncForEach(entries, async entry => {
-                    if(entry.value){
+                    if (entry.value) {
                         entry.value = entry.value.trim();
                     }
-                    if(chinaValueKeyMapping[entry.value]!==undefined){
+                    if (chinaValueKeyMapping[entry.value] !== undefined) {
                         entry.id = chinaValueKeyMapping[entry.value];
-                    }else{
+                    } else {
                         entry.id = await getId(entry.value, entry.file);
                     }
                 });
@@ -270,7 +300,7 @@ module.exports = async (params) => {
                 const metas = {};
                 metas[Types.jsFunc] = hasJSToolImport;
                 metas[Types.compName] = hasCompToolImport;
-                
+
                 Object.keys(metas).forEach((key) => {
                     if (metas[key]) {
                         let statement = null;
@@ -312,8 +342,13 @@ module.exports = async (params) => {
         });
     });
 
-    Utils.writeSync(path.resolve(target, 'zh_CN.js'), `export default ${JSON.stringify(chinaJSON, null, 2)}`);
-    Utils.writeSync(path.resolve(target, 'en_US.js'), `export default ${JSON.stringify(englishJSON, null, 2)}`);
+    const hasEnglish = translateLanguages.indexOf('en')!==-1;
+    Object.keys(TranslationContainer).forEach(language => {
+        if(!hasEnglish && language==='en'){
+            return;
+        }
+        Utils.writeSync(path.resolve(target, `${language}.js`), `export default ${JSON.stringify(TranslationContainer[language], null, 2)}`);
+    })
 
     await browser.close();
 }
