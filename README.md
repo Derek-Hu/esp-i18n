@@ -62,7 +62,7 @@ export default class ErrorPage403 extends React.Component {
 
 自动生成代码: 
 ```js
-import { formatMessage, FormattedMessage } from '~/locale-tools';
+import { formatMessage, FormattedMessage } from 'umi-plugin-locale';
 import React from 'react';
 import ErrorPage from '~/components/error-page';
 import Controller from 'meta.macro';
