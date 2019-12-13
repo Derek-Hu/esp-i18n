@@ -11,6 +11,9 @@ const loadLocales = require('./load');
 function isChineaseText(value) {
     return value && /[\u4e00-\u9fa5]/.test(value);
 }
+function isIdEmpty(id){
+    return (id===null || id===undefined);
+}
 function getJSFileList(root) {
     let res = [];
     let files = fs.readdirSync(root);
@@ -81,19 +84,27 @@ module.exports = async (params) => {
         compName: params.componentName || 'FormattedMessage'
     }
 
-    const browser = await puppeteer.launch({
-        headless: params.headless !== false
-    });
+    let browser;
 
     process.on('uncaughtException', async function () {
-        await browser.close();
+        if(browser){
+            await browser.close();
+        }
     });
-    const page = await browser.newPage();
-    await page.setViewport({
-        width: 1680,
-        height: 947,
-        deviceScaleFactor: 1,
-    });
+
+    let page;
+    async function launchBrowser(){
+        browser = await puppeteer.launch({
+            headless: params.headless !== false
+        });
+        page = await browser.newPage();
+        await page.setViewport({
+            width: 1680,
+            height: 947,
+            deviceScaleFactor: 1,
+        });
+    }
+
 
     const TranslationContainer = loadLocales(translateLanguages, target, LanguageMapping);
     if(!TranslationContainer['zh']){
@@ -108,6 +119,9 @@ module.exports = async (params) => {
     const waitOptions = { waitUntil: 'networkidle0' };
     async function translation(words, language, translationId) {
         
+        if(!page){
+            await launchBrowser();
+        }
         const transformdWords = words ? words.replace(/\%/g, '') : '';
         const selector = 'p.ordinary-output.target-output';
         try {
@@ -188,13 +202,16 @@ module.exports = async (params) => {
 
             return validId;
         } catch (e) {
-            console.log(e);
-            return words;
+            console.log(`翻译【${words}】至语言【${LanguageMapping[language]}】失败：`, e);
+            return null;
         }
     }
 
     async function getId(value) {
         const id = await translation(value, 'en');
+        if(isIdEmpty(id)){
+            return null;
+        }
         TranslationContainer['zh'][id] = value;
         chinaValueKeyMapping[value] = id;
 
@@ -208,7 +225,7 @@ module.exports = async (params) => {
             }
             await translation(value, code, id);
         })
-        return `${id ? id : value}`;
+        return id;
     }
 
     await asyncForEach(folders, async folder => {
@@ -351,6 +368,9 @@ module.exports = async (params) => {
                 }
 
                 sortedEntries.forEach(n => {
+                    if(isIdEmpty(n.id)){
+                        return;
+                    }
                     source = source.slice(0, n.start) + n.getReplacement(n.id) + source.slice(n.end);
                 });
 
@@ -371,6 +391,7 @@ module.exports = async (params) => {
             }
         });
     });
-
-    await browser.close();
+    if(browser){
+        await browser.close();
+    }
 }
