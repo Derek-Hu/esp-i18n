@@ -130,7 +130,7 @@ module.exports = async (params) => {
             await page.waitForFunction(selector => !!document.querySelector(selector), {}, selector);
             const datas = await page.evaluate((translatedId) => {
                 function formatWord(word) {
-                    return word.toLowerCase().replace(/[,.:/|']/g, '').trim().replace(/\s/g, '-');
+                    return word.toLowerCase().replace(/[,.:/|<*>()']/g, '').trim().replace(/\s/g, '-');
                 }
                 const maxWords = 4;
                 const keywordsSelector = 'ul.keywords-container li.keywords-content .keywords-means';
