@@ -48,6 +48,7 @@ module.exports = async (params) => {
     const target = path.resolve(process.cwd(), params.target || 'src/locale');
     const excludesFolders = params.excludes || [];
     const translateLanguages = params.translate && params.translate.length ? params.translate : ['en'];
+    const args = params.args;
 
     const hasEnglish = translateLanguages.indexOf('en') !== -1;
 
@@ -95,7 +96,8 @@ module.exports = async (params) => {
     let page;
     async function launchBrowser(){
         browser = await puppeteer.launch({
-            headless: params.headless !== false
+            headless: params.headless !== false,
+            args: args,
         });
         page = await browser.newPage();
         await page.setViewport({

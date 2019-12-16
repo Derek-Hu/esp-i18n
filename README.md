@@ -33,6 +33,9 @@ i18n({
     // 是否打开浏览器，可查看自动抓取翻译等效果，若浏览器页面出现卡顿，在此模式下则可人工干预；默认为关闭
     // headless: false,
 
+    // 浏览器崩溃，可开启如下参数解决
+    // args:  ['--disable-gpu', '--no-sandbox', '--lang=en-US', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+
     // 代码为Flow类型，而非Typescript
     // isFlow: true,
 

@@ -1,5 +1,4 @@
-// const i18n = require('esp-i18n');
-const i18n = require('../../../src/main');
+const i18n = require('esp-i18n');
 
 i18n({
     folders : ['src/react', 'src/typescript'],
