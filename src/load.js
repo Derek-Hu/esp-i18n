@@ -20,5 +20,10 @@ module.exports = function loadLocales(languages, baseFolder, supportedLanguages)
             resources[language] = JSON.parse(fileContent.replace(Constant.Header, ''));
         }catch(e){}
     });
+
+    if(!resources['zh']){
+        resources['zh'] = {};
+    }
+
     return resources;
 }

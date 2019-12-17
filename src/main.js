@@ -7,29 +7,9 @@ const Utils = require('./utils');
 const LanguageMapping = require('./languages');
 const Constant = require('./constant');
 const loadLocales = require('./load');
-
-function isChineaseText(value) {
-    return value && /[\u4e00-\u9fa5]/.test(value);
-}
-function isIdEmpty(id){
-    return (id===null || id===undefined);
-}
-function getJSFileList(root) {
-    let res = [];
-    let files = fs.readdirSync(root);
-
-    files.forEach(file => {
-        const pathname = path.join(root, file);
-        const stat = fs.lstatSync(pathname);
-
-        if (!stat.isDirectory() && /\.(js|jsx|ts|tsx)$/.test(pathname)) {
-            res.push(pathname);
-        } else if (stat.isDirectory()) {
-            res = res.concat(getJSFileList(pathname));
-        }
-    });
-    return res;
-}
+const BabelOption = require('./babel');
+const paramParser = require('./param');
+const browserCode = require('./browser');
 
 async function asyncForEach(array, callback) {
     for (let index = 0; index < array.length; index++) {
@@ -38,53 +18,12 @@ async function asyncForEach(array, callback) {
 }
 
 module.exports = async (params) => {
-    if(!params){
-        params = {};
-    }
-    const folders = params.folders || [];
-    const baseFolder = process.cwd();
-    const srcTarget = path.resolve(process.cwd(), params.srcCopyFolder || '');
-    const localToolsPath = params.localTools || 'umi-plugin-locale';
-    const target = path.resolve(process.cwd(), params.target || 'src/locale');
-    const excludesFolders = params.excludes || [];
+
+    const options = paramParser(params);
     const translateLanguages = params.translate && params.translate.length ? params.translate : ['en'];
-    const args = params.args;
-
-    const hasEnglish = translateLanguages.indexOf('en') !== -1;
-
-    const excludes = excludesFolders.map(exclude => path.resolve(process.cwd(), exclude));
-    excludes.push(target);
-
-    console.log('Excludes: ' + excludes);
-
-    const isFlow = params.isFlow === true;
-
-    const PluginOptions = {
-        sourceType: 'unambiguous',
-        // https://babeljs.io/docs/en/next/babel-parser#ECMAScript-proposals
-        plugins: [
-            'jsx',
-            isFlow? 'flow':'typescript',
-            ['decorators', { decoratorsBeforeExport: true }],
-            'asyncGenerators',
-            'bigInt',
-            'classProperties',
-            'classPrivateProperties',
-            'dynamicImport',
-            'exportDefaultFrom',
-            'exportNamespaceFrom',
-            'objectRestSpread',
-            'optionalCatchBinding',
-            'throwExpressions',
-            'topLevelAwait'
-        ],
-    };
-
-    const Types = {
-        jsFunc: params.jsName || 'formatMessage',
-        compName: params.componentName || 'FormattedMessage'
-    }
-
+    const Types = options.types;
+    const PluginOptions = BabelOption(options.isFlow);
+    
     let browser;
 
     process.on('uncaughtException', async function () {
@@ -97,7 +36,7 @@ module.exports = async (params) => {
     async function launchBrowser(){
         browser = await puppeteer.launch({
             headless: params.headless !== false,
-            args: args,
+            args: options.args,
         });
         page = await browser.newPage();
         await page.setViewport({
@@ -107,11 +46,8 @@ module.exports = async (params) => {
         });
     }
 
-
-    const TranslationContainer = loadLocales(translateLanguages, target, LanguageMapping);
-    if(!TranslationContainer['zh']){
-        TranslationContainer['zh'] = {};
-    }
+    const TranslationContainer = loadLocales(translateLanguages, options.target, LanguageMapping);
+    
     const chinaValueKeyMapping = Object.keys(TranslationContainer['zh']).reduce((all, chinaId)=> {
         all[TranslationContainer['zh'][chinaId]] = chinaId;
         return all;
@@ -130,60 +66,7 @@ module.exports = async (params) => {
             await page.goto(`https://fanyi.baidu.com/#zh/${language}/${decodeURIComponent(transformdWords)}`, waitOptions);
             await page.reload();
             await page.waitForFunction(selector => !!document.querySelector(selector), {}, selector);
-            const datas = await page.evaluate((translatedId) => {
-                function formatWord(word) {
-                    return word.toLowerCase().replace(/[,.:/|<*>()']/g, '').trim().replace(/\s/g, '-');
-                }
-                const maxWords = 4;
-                const keywordsSelector = 'ul.keywords-container li.keywords-content .keywords-means';
-
-                const translationEle = document.querySelector('p.ordinary-output.target-output');
-                const translation = translationEle.textContent.trim();
-                if (translatedId) {
-                    return {
-                        id: translatedId,
-                        translation: translation
-                    }
-                }
-
-                const keyMeansElems = document.querySelectorAll(keywordsSelector) || [];
-                const keyMeans = Array.prototype.slice.call(keyMeansElems).map(ele => ele.textContent);
-
-                let id = null;
-                const translationParts = translation.split(' ');
-                if (translationParts.length <= maxWords) {
-                    id = formatWord(translation);
-                } else if (keyMeans && keyMeans.length) {
-                    const allFirstMeans = keyMeans.map(means => {
-                        const firstMeans = means.split(';');
-                        if (firstMeans && firstMeans[0]) {
-                            return firstMeans[0];
-                        }
-                        return '';
-                    }).filter(v => v);
-
-                    id = allFirstMeans.reduce((means, word, index) => {
-                        if (index >= maxWords) {
-                            return means;
-                        }
-                        means.push(formatWord(word));
-                        return means;
-                    }, []).join('-');
-                } else {
-                    id = translationParts.reduce((means, word, index) => {
-                        if (index >= maxWords) {
-                            return means;
-                        }
-                        means.push(formatWord(word));
-                        return means;
-                    }, []).join('-');
-                    
-                }
-                return {
-                    id: id,
-                    translation: translation
-                };
-            }, translationId);
+            const datas = await page.evaluate(browserCode, translationId);
 
             let validId = datas.id;
 
@@ -211,7 +94,7 @@ module.exports = async (params) => {
 
     async function getId(value) {
         const id = await translation(value, 'en');
-        if(isIdEmpty(id)){
+        if(Utils.isIdEmpty(id)){
             return null;
         }
         TranslationContainer['zh'][id] = value;
@@ -230,10 +113,10 @@ module.exports = async (params) => {
         return id;
     }
 
-    await asyncForEach(folders, async folder => {
-        const jsFiles = getJSFileList(path.resolve(baseFolder, folder));
+    await asyncForEach(options.folders, async folder => {
+        const jsFiles = Utils.getJSFileList(path.resolve(options.baseFolder, folder));
         await asyncForEach(jsFiles, async file => {
-            const isExcludes = excludes.some(exclude => {
+            const isExcludes = options.excludes.some(exclude => {
                 return file.indexOf(exclude) === 0;
             });
             if (isExcludes) {
@@ -256,7 +139,7 @@ module.exports = async (params) => {
                         }
                         const node = _node.node;
                         const value = node.value;
-                        if (!isChineaseText(value)) {
+                        if (!Utils.isChineaseText(value)) {
                             return;
                         }
                         const funcName = nameMapping[Types.jsFunc] || Types.jsFunc;
@@ -273,7 +156,7 @@ module.exports = async (params) => {
                     ImportDeclaration(_node) {
                         const node = _node.node;
                         if (!hasImported) {
-                            hasImported = (node.type === 'ImportDeclaration' && node.source.value === localToolsPath);
+                            hasImported = (node.type === 'ImportDeclaration' && node.source.value === options.localToolsPath);
                             if (hasImported) {
                                 node.specifiers.forEach(spec => {
                                     nameMapping[spec.imported.name] = spec.local.name;
@@ -289,7 +172,7 @@ module.exports = async (params) => {
                     JSXAttribute(_node) {
                         const node = _node.node;
                         const value = node.value && node.value.value;
-                        if (!isChineaseText(value)) {
+                        if (!Utils.isChineaseText(value)) {
                             return;
                         }
                         const funcName = nameMapping[Types.jsFunc] || Types.jsFunc;
@@ -309,7 +192,7 @@ module.exports = async (params) => {
                     JSXText(_node) {
                         const node = _node.node;
                         const value = node.value;
-                        if (!isChineaseText(value)) {
+                        if (!Utils.isChineaseText(value)) {
                             return;
                         }
                         const funcName = nameMapping[Types.compName] || Types.compName;
@@ -359,7 +242,7 @@ module.exports = async (params) => {
                 })
                 let finalImport;
                 if (importToolNames.length) {
-                    finalImport = `import { ${importToolNames.join(', ')} } from '${localToolsPath}';\n`;
+                    finalImport = `import { ${importToolNames.join(', ')} } from '${options.localToolsPath}';\n`;
                 }
 
                 const sortedEntries = entries.sort((a, b) => { return b.end - a.end });
@@ -370,7 +253,7 @@ module.exports = async (params) => {
                 }
 
                 sortedEntries.forEach(n => {
-                    if(isIdEmpty(n.id)){
+                    if(Utils.isIdEmpty(n.id)){
                         return;
                     }
                     source = source.slice(0, n.start) + n.getReplacement(n.id) + source.slice(n.end);
@@ -381,12 +264,12 @@ module.exports = async (params) => {
                 }
                 if (sortedEntries.length) {
                     Object.keys(TranslationContainer).forEach(language => {
-                        if (!hasEnglish && language === 'en') {
+                        if (!options.hasEnglish && language === 'en') {
                             return;
                         }
-                        Utils.writeSync(path.resolve(target, `${language}.js`), `${Constant.Header}${JSON.stringify(TranslationContainer[language], null, 2)}`);
+                        Utils.writeSync(path.resolve(options.target, `${language}.js`), `${Constant.Header}${JSON.stringify(TranslationContainer[language], null, 2)}`);
                     });
-                    Utils.writeSync(path.resolve(srcTarget, path.relative(baseFolder, file)), source);
+                    Utils.writeSync(path.resolve(options.srcTarget, path.relative(options.baseFolder, file)), source);
                 }
             } catch (e) {
                 console.log(`解析文件失败：${file}`, e);

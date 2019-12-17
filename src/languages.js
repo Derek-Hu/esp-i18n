@@ -1,5 +1,5 @@
 // 支持中文翻译至其他语言的列表
-const LanguageMapping = { 
+module.exports = { 
     "en": "英语", 
     "ara": "阿拉伯语", 
     "est": "爱沙尼亚语", 
@@ -28,5 +28,3 @@ const LanguageMapping = {
     "cht": "中文繁体", 
     "vie": "越南语" 
 };
-
-module.exports = LanguageMapping;
