@@ -153,6 +153,28 @@ module.exports = async (params) => {
                         }
                         entries.push(call);
                     },
+                    TemplateLiteral(_node){
+                        const node = _node.node;
+                        if(!node.quasis || !node.quasis.length){
+                            return;
+                        }
+                        const funcName = nameMapping[Types.jsFunc] || Types.jsFunc;
+                        
+                        node.quasis.forEach((quasi) => {
+                            const value = quasi.value.raw;
+                            if (!Utils.isChineaseText(value)) {
+                                return;
+                            }
+                            entries.push({
+                                isComponent: false,
+                                start: quasi.start,
+                                end: quasi.end,
+                                value: quasi.value.raw,
+                                file: file,
+                                getReplacement: (id) => `\${${funcName}({id: '${id}'})}`
+                            });
+                        });
+                    },
                     ImportDeclaration(_node) {
                         const node = _node.node;
                         if (!hasImported) {
