@@ -17,13 +17,12 @@ module.exports = function loadLocales(languages, baseFolder, supportedLanguages)
         }
         try{
             const fileContent = fs.readFileSync(path.resolve(baseFolder, `${language}.js`), 'UTF8');
-            resources[language] = JSON.parse(fileContent.replace(Constant.Header, ''));
-        }catch(e){}
+            resources[language] = eval(`${fileContent.replace(Constant.Header, 'false? null: ')}`);
+        }catch(e){
+        }
     });
-
     if(!resources['zh']){
         resources['zh'] = {};
     }
-
     return resources;
 }
