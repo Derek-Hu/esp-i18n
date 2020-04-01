@@ -26,12 +26,16 @@ module.exports = async (params) => {
     
     let browser;
 
-    process.on('uncaughtException', async function () {
-        if(browser){
-            await browser.close();
-        }
+    ['SIGINT', 'SIGTERM'].forEach(function (sig) {
+        process.on(sig, async () => {
+            if(browser){
+                await browser.close();
+            }
+        });
     });
 
+    debugger;
+    
     let page;
     async function launchBrowser(){
         browser = await puppeteer.launch({
@@ -70,13 +74,13 @@ module.exports = async (params) => {
 
             let validId = datas.id;
 
-            if ((validId in TranslationContainer['zh']) && (TranslationContainer['zh'][validId] !== words)) {
-                if (duplicateKeys[validId]) {
-                    duplicateKeys[validId] += 1;
-                } else {
+            while((validId in TranslationContainer['zh']) && (TranslationContainer['zh'][validId] !== words)){
+                if (!duplicateKeys[validId]) {
                     duplicateKeys[validId] = 1;
+                } else {
+                    duplicateKeys[validId] += 1;
                 }
-                validId = `${validId}-${duplicateKeys[datas.id]}`;
+                validId = `${validId}-${duplicateKeys[validId]}`;
             }
 
             if (!TranslationContainer[language]) {
@@ -231,7 +235,8 @@ module.exports = async (params) => {
                     }
                 });
 
-                await asyncForEach(entries, async entry => {
+                await asyncForEach(entries, async (entry, idx) => {
+                    console.log(`${idx}/${entries.length}`)
                     if (entry.value) {
                         entry.value = entry.value.trim();
                     }
