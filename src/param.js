@@ -1,6 +1,7 @@
 // 解析用户传入参数
 
 const path = require('path');
+const vue = require('./vue');
 
 module.exports = function (params) {
     if (!params) {
@@ -26,7 +27,7 @@ module.exports = function (params) {
         target: target,
         getSource: function(path, content) {
             if (/\.vue$/.test(path)) {
-                var contentOneLine = content;
+                var contentOneLine = vue(path, content);;
                 const placeholder = '________';
                 const scripts = '<script>' + placeholder + '</script>';
                 const matchs = contentOneLine.match(/<script>((.*\n)*)<\/script>/);
