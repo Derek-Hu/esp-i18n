@@ -11,7 +11,7 @@ function createFolderIfNotExists(outputFilePath) {
 }
 
 // 获取文件列表
-function getJSFileList (root) {
+function getJSFileList(root) {
     let res = [];
     let files = fs.readdirSync(root);
 
@@ -32,8 +32,8 @@ function getJSFileList (root) {
 module.exports.isChineaseText = function (value) {
     return value && /[\u4e00-\u9fa5]/.test(value);
 }
-module.exports.isIdEmpty = function (id){
-    return (id===null || id===undefined);
+module.exports.isIdEmpty = function (id) {
+    return (id === null || id === undefined);
 }
 module.exports.getJSFileList = getJSFileList;
 

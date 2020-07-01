@@ -1,8 +1,11 @@
-const fs = require('fs');
-const path = require('path');
-const Utils = require('./utils');
+// const fs = require('fs');
+// const path = require('path');
+// const Utils = require('./utils');
+const translateByRemote = require('./translateByRemote');
 
-module.exports = (filepath, content) => {
+const translation = translateByRemote.translate;
+
+module.exports = async (filepath, content, launchOptions) => {
     // console.log(filepath);
     let lines = content.split('\n');
 
@@ -11,7 +14,13 @@ module.exports = (filepath, content) => {
     let isEnd = false;
     let isComment = false;
     let currentIsCommentEnd = false;
-    lines = lines.map(line => {
+    const TranslationContainer = {};
+    const duplicateKeys = {};
+
+    const newLines = [];
+
+    for (line of lines) {
+
         if (currentIsCommentEnd) {
             currentIsCommentEnd = false;
         }
@@ -21,11 +30,9 @@ module.exports = (filepath, content) => {
         if (line.indexOf('</template>') !== -1) {
             isEnd = true;
         }
-        if (!isStart) {
-            return line;
-        }
-        if (isEnd) {
-            return line;
+        if (!isStart || isEnd) {
+            newLines.push(line);
+            continue;
         }
         if (line.indexOf('<!--') !== -1) {
             isComment = true;
@@ -34,11 +41,9 @@ module.exports = (filepath, content) => {
             isComment = false;
             currentIsCommentEnd = true;
         }
-        if (isComment) {
-            return line;
-        }
-        if (currentIsCommentEnd) {
-            return line;
+        if (isComment || currentIsCommentEnd) {
+            newLines.push(line);
+            continue;
         }
         const lineWords = line.match(/[\u4e00-\u9fa5，。]+[a-z0-9A-Z]*[\u4e00-\u9fa5，。]+/g);
         if (lineWords && lineWords.length) {
@@ -54,16 +59,20 @@ module.exports = (filepath, content) => {
                     line = line.replace(attrMatch[0], ':' + attrMatch[0]);
                     words[lineWords[0]] = line;
                 }
-            }else{
+                const id = await translation(launchOptions, lineWords[0], 'en', null, TranslationContainer, duplicateKeys);
+                words[lineWords[0]] = 'id=' + id + ' ' + words[lineWords[0]];
+                console.log(lineWords[0], words[lineWords[0]])
+            } else {
                 console.log('greate: ', filepath, lineWords);
             }
         }
-        return line;
-    });
+        newLines.push(line);
+    }
 
     if (Object.keys(words).length) {
-        return '<templte>\nLabels: {\n' + Object.keys(words).map(w => `'${w}${words[w] === true ? '' : '=' + words[w]}'`).join(',\n') + '\n}\n</templte>\n' + lines.join('\n');
+        return '<templte>\nLabels: {\n' + Object.keys(words).map(w => `'${w}${words[w] === true ? '' : '=' + words[w]}'`).join(',\n') + '\n}\n</templte>\n' + newLines.join('\n');
     }
+    // console.log('content', content)
     return content;
 }
 

@@ -25,9 +25,12 @@ module.exports = function (params) {
         isFlow: params.isFlow === true,
         args: params.args,
         target: target,
-        getSource: function(path, content) {
+        getSource: async function (path, content) {
             if (/\.vue$/.test(path)) {
-                var contentOneLine = vue(path, content);;
+                var contentOneLine = await vue(path, content, {
+                    headless: params.headless,
+                    args: params.args,
+                });
                 const placeholder = '________';
                 const scripts = '<script>' + placeholder + '</script>';
                 const matchs = contentOneLine.match(/<script>((.*\n)*)<\/script>/);
