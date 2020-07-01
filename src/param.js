@@ -2,8 +2,8 @@
 
 const path = require('path');
 
-module.exports = function (params){
-    if(!params){
+module.exports = function (params) {
+    if (!params) {
         params = {};
     }
     const target = path.resolve(process.cwd(), params.target || 'src/locale');
@@ -19,11 +19,27 @@ module.exports = function (params){
     return {
         folders: params.folders || [],
         baseFolder: process.cwd(),
-        srcTarget : path.resolve(process.cwd(), params.srcCopyFolder || ''),
-        localToolsPath : params.localTools || 'umi-plugin-locale',
-        isFlow : params.isFlow === true,
-        args : params.args,
+        srcTarget: path.resolve(process.cwd(), params.srcCopyFolder || ''),
+        localToolsPath: params.localTools || 'umi-plugin-locale',
+        isFlow: params.isFlow === true,
+        args: params.args,
         target: target,
+        getSource: function(path, content) {
+            if (/\.vue$/.test(path)) {
+                var contentOneLine = content;
+                const placeholder = '________';
+                const scripts = '<script>' + placeholder + '</script>';
+                const matchs = contentOneLine.match(/<script>((.*\n)*)<\/script>/);
+                const validContent = matchs && matchs[1];
+
+                return [
+                    validContent,
+                    contentOneLine.replace(/<script>((.*\n)*)<\/script>/, scripts),
+                    placeholder
+                ];
+            }
+            return [content];
+        },
         hasEnglish: hasEnglish,
         translateLanguages: translateLanguages,
         excludes: excludes,

@@ -23,21 +23,21 @@ module.exports = async (params) => {
     const translateLanguages = params.translate && params.translate.length ? params.translate : ['en'];
     const Types = options.types;
     const PluginOptions = BabelOption(options.isFlow);
-    
+
     let browser;
 
     ['SIGINT', 'SIGTERM'].forEach(function (sig) {
         process.on(sig, async () => {
-            if(browser){
+            if (browser) {
                 await browser.close();
             }
         });
     });
 
     debugger;
-    
+
     let page;
-    async function launchBrowser(){
+    async function launchBrowser() {
         browser = await puppeteer.launch({
             headless: params.headless !== false,
             args: options.args,
@@ -51,8 +51,8 @@ module.exports = async (params) => {
     }
 
     const TranslationContainer = loadLocales(translateLanguages, options.target, LanguageMapping);
-    
-    const chinaValueKeyMapping = Object.keys(TranslationContainer['zh']).reduce((all, chinaId)=> {
+
+    const chinaValueKeyMapping = Object.keys(TranslationContainer['zh']).reduce((all, chinaId) => {
         all[TranslationContainer['zh'][chinaId]] = chinaId;
         return all;
     }, {});
@@ -60,8 +60,8 @@ module.exports = async (params) => {
     const duplicateKeys = {};
     const waitOptions = { waitUntil: 'networkidle0' };
     async function translation(words, language, translationId) {
-        
-        if(!page){
+
+        if (!page) {
             await launchBrowser();
         }
         const transformdWords = words ? words.replace(/\%/g, '') : '';
@@ -74,7 +74,7 @@ module.exports = async (params) => {
 
             let validId = datas.id;
 
-            while((validId in TranslationContainer['zh']) && (TranslationContainer['zh'][validId] !== words)){
+            while ((validId in TranslationContainer['zh']) && (TranslationContainer['zh'][validId] !== words)) {
                 if (!duplicateKeys[validId]) {
                     duplicateKeys[validId] = 1;
                 } else {
@@ -98,7 +98,7 @@ module.exports = async (params) => {
 
     async function getId(value) {
         const id = await translation(value, 'en');
-        if(Utils.isIdEmpty(id)){
+        if (Utils.isIdEmpty(id)) {
             return null;
         }
         TranslationContainer['zh'][id] = value;
@@ -128,7 +128,10 @@ module.exports = async (params) => {
             }
             const entries = [];
             const fileContent = fs.readFileSync(file, 'UTF8');
-            let source = fileContent;
+
+            const [jsContent, wrapper, placeholder] = options.getSource ? options.getSource(file, fileContent) : [fileContent, null];
+
+            let source = jsContent;
             let hasImported = false;
             let importMeta = null;
             const importToolNames = [];
@@ -157,13 +160,13 @@ module.exports = async (params) => {
                         }
                         entries.push(call);
                     },
-                    TemplateLiteral(_node){
+                    TemplateLiteral(_node) {
                         const node = _node.node;
-                        if(!node.quasis || !node.quasis.length){
+                        if (!node.quasis || !node.quasis.length) {
                             return;
                         }
                         const funcName = nameMapping[Types.jsFunc] || Types.jsFunc;
-                        
+
                         node.quasis.forEach((quasi) => {
                             const value = quasi.value.raw;
                             if (!Utils.isChineaseText(value)) {
@@ -236,7 +239,7 @@ module.exports = async (params) => {
                 });
 
                 await asyncForEach(entries, async (entry, idx) => {
-                    console.log(`${idx}/${entries.length}`)
+                    console.log(`${idx+1}/${entries.length}`)
                     if (entry.value) {
                         entry.value = entry.value.trim();
                     }
@@ -280,7 +283,7 @@ module.exports = async (params) => {
                 }
 
                 sortedEntries.forEach(n => {
-                    if(Utils.isIdEmpty(n.id)){
+                    if (Utils.isIdEmpty(n.id)) {
                         return;
                     }
                     source = source.slice(0, n.start) + n.getReplacement(n.id) + source.slice(n.end);
@@ -289,6 +292,9 @@ module.exports = async (params) => {
                 if (finalImport && !hasImported) {
                     source = finalImport + source;
                 }
+
+                source = wrapper &&  placeholder ? wrapper.replace(placeholder, source) : source;
+
                 if (sortedEntries.length) {
                     Object.keys(TranslationContainer).forEach(language => {
                         if (!options.hasEnglish && language === 'en') {
@@ -303,7 +309,7 @@ module.exports = async (params) => {
             }
         });
     });
-    if(browser){
+    if (browser) {
         await browser.close();
     }
 }

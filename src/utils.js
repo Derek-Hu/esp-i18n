@@ -19,7 +19,7 @@ function getJSFileList (root) {
         const pathname = path.join(root, file);
         const stat = fs.lstatSync(pathname);
 
-        if (!stat.isDirectory() && /\.(js|jsx|ts|tsx)$/.test(pathname)) {
+        if (!stat.isDirectory() && /\.(js|jsx|ts|tsx|vue)$/.test(pathname)) {
             res.push(pathname);
         } else if (stat.isDirectory()) {
             res = res.concat(getJSFileList(pathname));
