@@ -16,12 +16,12 @@ let browser;
 });
 
 async function launchBrowser(launchOptions) {
-    console.log('launchOptions', launchOptions);
+    // console.log('launchOptions', launchOptions);
     browser = await puppeteer.launch({
         headless: launchOptions.headless !== false,
         args: launchOptions.args,
     });
-    console.log('open page');
+    // console.log('open page');
     page = await browser.newPage();
     
     await page.setViewport({

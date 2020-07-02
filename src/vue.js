@@ -152,7 +152,6 @@ module.exports = async (filepath, content, launchOptions) => {
     for (line of lines) {
 
         processIdx++;
-        console.log(`${processIdx}/${lines.length}`);
 
         if (currentIsCommentEnd) {
             currentIsCommentEnd = false;
@@ -178,21 +177,26 @@ module.exports = async (filepath, content, launchOptions) => {
             newLines.push(line);
             continue;
         }
-        const lineWords = line.match(/[a-z0-9()\sA-Z?]*[\u4e00-\u9fa5，（）？。]+[a-z0-9A-Z]*[\u4e00-\u9fa5，（）？。]+[a-z0-9()\sA-Z?]*/g);
+        // console.log(`${processIdx}/${lines.length}`);
 
-        console.log('lineWords', lineWords);
+        const lineWords = line.match(/\s*([^>{}<]*[\u4e00-\u9fa5]+[^<{}>]*)\s*/g);
+
+        // console.log('lineWords', lineWords);
         if (lineWords && lineWords.length) {
             if (lineWords.length === 1) {
+
+                const currentWord = lineWords[0].trim();
                 
-                const id = await translation(launchOptions, lineWords[0], 'en', projectIds[lineWords[0]], TranslationContainer, duplicateKeys);
+                const id = await translation(launchOptions, currentWord, 'en', projectIds[currentWord], TranslationContainer, duplicateKeys);
                 const vid = cammelCase(id);
 
-                projectIds[lineWords[0]] = vid;
+                projectIds[currentWord] = vid;
 
-                let reg = new RegExp('(\\w+=)"' + lineWords[0] + '"');
+                const transformedWord = currentWord.split('').map(function(k){return '\\'+k}).join('');
+                let reg = new RegExp('(\\w+=)"' + transformedWord + '"');
                 let attrMatch = line.match(reg);
                 if (!attrMatch) {
-                    reg = new RegExp(`(:\\w+=)"'` + lineWords[0] + `'"`);
+                    reg = new RegExp(`(:\\w+=)"'` + transformedWord + `'"`);
                     attrMatch = line.match(reg);
                 }
                 if (attrMatch && attrMatch[0]) {
@@ -201,10 +205,13 @@ module.exports = async (filepath, content, launchOptions) => {
                 }
 
                 if (!attrMatch) {
-                    line = line.replace(lineWords[0], `{{${IDName}.${vid}}}`);
+                    line = line.replace(currentWord, `{{${IDName}.${vid}}}`);
                 }
 
-                labels[vid] = lineWords[0];
+                if(labels[vid]!==currentWord){
+                    console.error('出现重复ID'+filepath+':\n', labels[vid], currentWord);
+                }
+                labels[vid] = currentWord;
             }
         }
         newLines.push(line);
@@ -217,6 +224,7 @@ module.exports = async (filepath, content, launchOptions) => {
         const modified = updateModifedScripts(newSource, modifiedScripts);
         console.log(modifiedScripts);
         if (isUpdated) {
+            console.log('file: '+filepath);
             return modified;
         }
         return '<templte>\nLabels: {\n' + Object.keys(labels).map(w => `${w}=${labels[w]}`).join(',\n') + '\n}\n</templte>\n' + modified;
