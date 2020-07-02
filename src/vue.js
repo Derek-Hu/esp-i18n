@@ -176,7 +176,7 @@ module.exports = async (filepath, content, launchOptions) => {
         }
         // console.log(`${processIdx}/${lines.length}`);
 
-        const lineWords = line.match(/\s*([^>{}<"]*[\u4e00-\u9fa5]+[^<{"}>]*)\s*/g);
+        const lineWords = line.match(/\s*([^>{"'}<]*[\u4e00-\u9fa5]+[^<{"'}>]*)\s*/g);
 
         // console.log('lineWords', lineWords);
         if (lineWords && lineWords.length) {
