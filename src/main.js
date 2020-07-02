@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-// const puppeteer = require('puppeteer');
 const traverse = require("@babel/traverse").default;
 const babelParser = require("@babel/parser");
 const Utils = require('./utils');
@@ -9,7 +8,6 @@ const Constant = require('./constant');
 const loadLocales = require('./load');
 const BabelOption = require('./babel');
 const paramParser = require('./param');
-// const browserCode = require('./browser');
 const translateByRemote = require('./translateByRemote');
 
 const translation = translateByRemote.translate;
@@ -31,31 +29,6 @@ module.exports = async (params) => {
         headless: params.headless,
         args: params.args,
     }
-    // let browser;
-
-    // ['SIGINT', 'SIGTERM'].forEach(function (sig) {
-    //     process.on(sig, async () => {
-    //         if (browser) {
-    //             await browser.close();
-    //         }
-    //     });
-    // });
-
-    // debugger;
-
-    // let page;
-    // async function launchBrowser() {
-    //     browser = await puppeteer.launch({
-    //         headless: params.headless !== false,
-    //         args: options.args,
-    //     });
-    //     page = await browser.newPage();
-    //     await page.setViewport({
-    //         width: 1680,
-    //         height: 947,
-    //         deviceScaleFactor: 1,
-    //     });
-    // }
 
     const TranslationContainer = loadLocales(translateLanguages, options.target, LanguageMapping);
 
@@ -65,46 +38,9 @@ module.exports = async (params) => {
     }, {});
 
     const duplicateKeys = {};
-    // const waitOptions = { waitUntil: 'networkidle0' };
-    // async function translation(words, language, translationId) {
-
-    //     if (!page) {
-    //         await launchBrowser();
-    //     }
-    //     const transformdWords = words ? words.replace(/\%/g, '') : '';
-    //     const selector = 'p.ordinary-output.target-output';
-    //     try {
-    //         await page.goto(`https://fanyi.baidu.com/#zh/${language}/${decodeURIComponent(transformdWords)}`, waitOptions);
-    //         await page.reload();
-    //         await page.waitForFunction(selector => !!document.querySelector(selector), {}, selector);
-    //         const datas = await page.evaluate(browserCode, translationId);
-
-    //         let validId = datas.id;
-
-    //         while ((validId in TranslationContainer['zh']) && (TranslationContainer['zh'][validId] !== words)) {
-    //             if (!duplicateKeys[validId]) {
-    //                 duplicateKeys[validId] = 1;
-    //             } else {
-    //                 duplicateKeys[validId] += 1;
-    //             }
-    //             validId = `${validId}-${duplicateKeys[validId]}`;
-    //         }
-
-    //         if (!TranslationContainer[language]) {
-    //             TranslationContainer[language] = {};
-    //         }
-
-    //         TranslationContainer[language][validId] = datas.translation;
-
-    //         return validId;
-    //     } catch (e) {
-    //         console.log(`翻译【${words}】至语言【${LanguageMapping[language]}】失败：`, e);
-    //         return null;
-    //     }
-    // }
 
     async function getId(value) {
-        console.log('getId launchOptions', launchOptions);
+        // console.log('getId launchOptions', launchOptions);
         const id = await translation(launchOptions, value, 'en', null, TranslationContainer, duplicateKeys);
         if (Utils.isIdEmpty(id)) {
             return null;
@@ -313,7 +249,8 @@ module.exports = async (params) => {
                     Utils.writeSync(path.resolve(options.srcTarget, path.relative(options.baseFolder, file)), source);
                 }
             } catch (e) {
-                console.log(`解析文件失败：${file}`, e);
+                console.error(`解析文件失败：${file}`, e);
+                console.log(jsContent);
             }
         });
     });

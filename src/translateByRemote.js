@@ -72,6 +72,7 @@ module.exports.translate = async function (launchOptions, words, language, trans
 
         return validId;
     } catch (e) {
+        TranslationContainer[language][words] = words;
         console.log(`翻译【${words}】至语言【${LanguageMapping[language]}】失败：`, e);
         return null;
     }

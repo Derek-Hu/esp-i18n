@@ -52,7 +52,7 @@ const parseVueData = (source, i18n, IDName) => {
                             start: properties[properties.length - 1].start,
                             end: properties[properties.length - 1].end,
                             isInsert: true,
-                            getReplacement: () => `data(){return { ${IDName}: ${JSON.stringify(i18n, null, 2)}}},`
+                            getReplacement: () => `,data(){return { ${IDName}: ${JSON.stringify(i18n, null, 2)}}}`
                         });
                         return;
                     }
@@ -82,7 +82,6 @@ const parseVueData = (source, i18n, IDName) => {
                             if (hasLabels) {
                                 if (hasLabels.value.type === 'ObjectExpression') {
                                     if (hasLabels.value.properties.length) {
-                                        console.log('000')
                                         actions.push({
                                             start: hasLabels.value.properties[0].start,
                                             end: hasLabels.value.properties[0].end,
@@ -92,7 +91,6 @@ const parseVueData = (source, i18n, IDName) => {
                                     }
                                 }
                             } else {
-                                console.log('001')
                                 actions.push({
                                     start: returnStatment.argument.properties[0].start,
                                     end: returnStatment.argument.properties[0].end,
@@ -101,7 +99,6 @@ const parseVueData = (source, i18n, IDName) => {
                                 });
                             }
                         } else {
-                            console.log('002')
                             actions.push({
                                 start: returnStatment.argument.start,
                                 end: returnStatment.argument.end,
@@ -179,20 +176,20 @@ module.exports = async (filepath, content, launchOptions) => {
         }
         // console.log(`${processIdx}/${lines.length}`);
 
-        const lineWords = line.match(/\s*([^>{}<]*[\u4e00-\u9fa5]+[^<{}>]*)\s*/g);
+        const lineWords = line.match(/\s*([^>{}<"]*[\u4e00-\u9fa5]+[^<{"}>]*)\s*/g);
 
         // console.log('lineWords', lineWords);
         if (lineWords && lineWords.length) {
             if (lineWords.length === 1) {
 
                 const currentWord = lineWords[0].trim();
-                
+
                 const id = await translation(launchOptions, currentWord, 'en', projectIds[currentWord], TranslationContainer, duplicateKeys);
                 const vid = cammelCase(id);
 
                 projectIds[currentWord] = vid;
 
-                const transformedWord = currentWord.split('').map(function(k){return '\\'+k}).join('');
+                const transformedWord = currentWord.split('').map(function (k) { return '\\' + k }).join('');
                 let reg = new RegExp('(\\w+=)"' + transformedWord + '"');
                 let attrMatch = line.match(reg);
                 if (!attrMatch) {
@@ -201,15 +198,15 @@ module.exports = async (filepath, content, launchOptions) => {
                 }
                 if (attrMatch && attrMatch[0]) {
                     line = line.replace(attrMatch[0], `:${attrMatch[1]}="${IDName}.${vid}"`);
-                    console.log('attrMatch', line, attrMatch);
+                    // console.log('attrMatch', line, attrMatch);
                 }
 
                 if (!attrMatch) {
                     line = line.replace(currentWord, `{{${IDName}.${vid}}}`);
                 }
 
-                if(labels[vid]!==currentWord){
-                    console.error('出现重复ID'+filepath+':\n', labels[vid], currentWord);
+                if (labels[vid] !== undefined && labels[vid] !== currentWord) {
+                    console.error('出现重复ID' + filepath + ':\n', labels[vid], currentWord);
                 }
                 labels[vid] = currentWord;
             }
@@ -222,9 +219,9 @@ module.exports = async (filepath, content, launchOptions) => {
         const scripts = getVueScriptContent(content);
         const { source: modifiedScripts, isUpdated } = parseVueData(scripts, labels, IDName);
         const modified = updateModifedScripts(newSource, modifiedScripts);
-        console.log(modifiedScripts);
+        // console.log(modifiedScripts);
         if (isUpdated) {
-            console.log('file: '+filepath);
+            // console.log('file: ' + filepath);
             return modified;
         }
         return '<templte>\nLabels: {\n' + Object.keys(labels).map(w => `${w}=${labels[w]}`).join(',\n') + '\n}\n</templte>\n' + modified;
