@@ -77,7 +77,7 @@ module.exports = async (params) => {
 
     const fileNeedProcessing = getProcessFiles(options.folders, options.excludes);
 
-    const progressBar = new ProgressBar('  国际化中 [:bar] :percent 剩余:etas秒', {
+    const progressBar = new ProgressBar('国际化:current/:total个文件 [:bar] :percent 耗时:elapsed秒 正在处理文件：:file', {
         complete: '=',
         incomplete: ' ',
         width: 20,
@@ -86,6 +86,9 @@ module.exports = async (params) => {
     await asyncForEach(fileNeedProcessing, async file => {
         const entries = [];
         const fileContent = fs.readFileSync(file, 'UTF8');
+        progressBar.tick({
+            file: file,
+        });
 
         const [jsContent, wrapper, placeholder] = options.getSource ? await options.getSource(file, fileContent) : [fileContent, null];
 
@@ -94,6 +97,7 @@ module.exports = async (params) => {
         let importMeta = null;
         const importToolNames = [];
         const nameMapping = {};
+        
 
         try {
             const astTree = babelParser.parse(source, PluginOptions);
@@ -196,22 +200,20 @@ module.exports = async (params) => {
                 }
             });
 
-            progressBar.tick();
-
             if (!entries.length) {
                 return;
             }
 
-            const relativePath = path.relative(process.cwd(), file);
-            const fileBar = new ProgressBar('  文件'+relativePath+'处理中 [:bar]  :current/:total 耗时:elapsed秒 ', {
-                complete: '=',
-                incomplete: ' ',
-                width: 20,
-                total: entries.length,
-            });
+            // const relativePath = path.relative(process.cwd(), file);
+            // const fileBar = new ProgressBar('[:bar] 文件['+file+']处理中 :current/:total', {
+            //     complete: '=',
+            //     incomplete: ' ',
+            //     width: 20,
+            //     total: entries.length,
+            // });
 
             await asyncForEach(entries, async (entry) => {
-                fileBar.tick();
+                // fileBar.tick();
                 if (entry.value) {
                     entry.value = entry.value.trim();
                 }

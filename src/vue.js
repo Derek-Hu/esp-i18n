@@ -43,69 +43,77 @@ const parseVueData = (source, i18n, IDName) => {
             const declaration = _node.node.declaration;
             if (declaration.type === 'ObjectExpression') {
                 const properties = declaration.properties;
-                if (properties && properties.length) {
-                    const dataMethod = properties.find(prop => {
-                        return prop.type === 'ObjectMethod' && prop.key && prop.key.type === 'Identifier' && prop.key.name === 'data';
+                if (!properties.length) {
+                    actions.push({
+                        start: declaration.start,
+                        end: declaration.end,
+                        isInsert: false,
+                        getReplacement: () => `{\ndata(){\nreturn {\n ${IDName}: ${JSON.stringify(i18n, null, 2)}\n}\n}\n}`
                     });
-                    if (!dataMethod) {
+                    return;
+                }
+                const dataMethod = properties.find(prop => {
+                    return prop.type === 'ObjectMethod' && prop.key && prop.key.type === 'Identifier' && prop.key.name === 'data';
+                });
+                if (!dataMethod) {
+                    actions.push({
+                        start: properties[properties.length - 1].start,
+                        end: properties[properties.length - 1].end,
+                        isInsert: true,
+                        getReplacement: () => `,data(){\nreturn {\n ${IDName}: ${JSON.stringify(i18n, null, 2)}\n}\n}`
+                    });
+                    return;
+                }
+                const body = dataMethod.body ? dataMethod.body.body : null;
+                if (!body.length) {
+                    actions.push({
+                        start: dataMethod.body.start,
+                        end: dataMethod.body.end,
+                        isInsert: false,
+                        getReplacement: () => `{\nreturn {\n ${IDName}: ${JSON.stringify(i18n, null, 2)}\n}\n}`
+                    });
+                    return;
+                }
+                const returnStatment = body.find(statement => statement.type === 'ReturnStatement');
+                if (!returnStatment) {
+                    actions.push({
+                        start: body[body.length - 1].start,
+                        end: body[body.length - 1].end,
+                        isInsert: true,
+                        getReplacement: () => `return {\n ${IDName}: ${JSON.stringify(i18n, null, 2)}\n}`
+                    });
+                    return;
+                }
+                if (returnStatment.argument.type !== 'ObjectExpression') {
+                    return;
+                }
+                if (!returnStatment.argument.properties.length) {
+                    actions.push({
+                        start: returnStatment.argument.start,
+                        end: returnStatment.argument.end,
+                        isInsert: false,
+                        getReplacement: () => `{\nLabels: ${JSON.stringify(i18n, null, 2)}\n}`
+                    });
+                    return;
+                }
+                const hasLabels = returnStatment.argument.properties.find(p => p.type === 'ObjectProperty' && p.key.name === IDName);
+                if (!hasLabels) {
+                    actions.push({
+                        start: returnStatment.argument.properties[0].start,
+                        end: returnStatment.argument.properties[0].end,
+                        isInsert: true,
+                        getReplacement: () => `\n,Labels: ${JSON.stringify(i18n, null, 2)}`
+                    });
+                    return;
+                }
+                if (hasLabels.value.type === 'ObjectExpression') {
+                    if (hasLabels.value.properties.length) {
                         actions.push({
-                            start: properties[properties.length - 1].start,
-                            end: properties[properties.length - 1].end,
+                            start: hasLabels.value.properties[0].start,
+                            end: hasLabels.value.properties[0].end,
                             isInsert: true,
-                            getReplacement: () => `,data(){return { ${IDName}: ${JSON.stringify(i18n, null, 2)}}}`
+                            getReplacement: () => `,${Object.keys(i18n).map(key => `${key}:\`${i18n[key]}\``).join(',\n')}`
                         });
-                        return;
-                    }
-                    const body = dataMethod.body ? dataMethod.body.body : null;
-
-                    const returnStatment = body ? body.find(statement => statement.type === 'ReturnStatement') : null;
-                    if (!body.length) {
-                        actions.push({
-                            start: dataMethod.body.start,
-                            end: dataMethod.body.end,
-                            isInsert: true,
-                            getReplacement: () => `return { ${IDName}: ${JSON.stringify(i18n, null, 2)}}`
-                        });
-                        return;
-                    } else if (!returnStatment) {
-                        actions.push({
-                            start: body[body.length - 1].start,
-                            end: body[body.length - 1].end,
-                            isInsert: true,
-                            getReplacement: () => `return { ${IDName}: ${JSON.stringify(i18n, null, 2)}}`
-                        });
-                        return;
-                    }
-                    if (returnStatment.argument.type === 'ObjectExpression') {
-                        if (returnStatment.argument.properties && returnStatment.argument.properties.length) {
-                            const hasLabels = returnStatment.argument.properties.find(p => p.type === 'ObjectProperty' && p.key.name === IDName);
-                            if (hasLabels) {
-                                if (hasLabels.value.type === 'ObjectExpression') {
-                                    if (hasLabels.value.properties.length) {
-                                        actions.push({
-                                            start: hasLabels.value.properties[0].start,
-                                            end: hasLabels.value.properties[0].end,
-                                            isInsert: true,
-                                            getReplacement: () => `,${Object.keys(i18n).map(key => `${key}:${i18n[key]}, `).join(',\n')}`
-                                        });
-                                    }
-                                }
-                            } else {
-                                actions.push({
-                                    start: returnStatment.argument.properties[0].start,
-                                    end: returnStatment.argument.properties[0].end,
-                                    isInsert: true,
-                                    getReplacement: () => `\n,Labels: ${JSON.stringify(i18n, null, 2)}`
-                                });
-                            }
-                        } else {
-                            actions.push({
-                                start: returnStatment.argument.start,
-                                end: returnStatment.argument.end,
-                                isInsert: true,
-                                getReplacement: () => `\nLabels: ${JSON.stringify(i18n, null, 2)},`
-                            });
-                        }
                     }
                 }
             }
@@ -131,7 +139,7 @@ const parseVueData = (source, i18n, IDName) => {
 const projectIds = {};
 
 module.exports = async (filepath, content, launchOptions) => {
-    console.log(filepath);
+    // console.log(filepath);
     let lines = content.split('\n');
 
     const IDName = 'Labels';
