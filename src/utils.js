@@ -30,7 +30,7 @@ function getJSFileList(root) {
 
 // 是否为中文
 module.exports.isChineaseText = function (value) {
-    return value && /[\u4e00-\u9fa5]/.test(value);
+    return value && /[\u4e00-\u9fa5？（）。]/.test(value);
 }
 module.exports.isIdEmpty = function (id) {
     return (id === null || id === undefined);

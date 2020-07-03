@@ -98,7 +98,6 @@ module.exports = async (params) => {
         const importToolNames = [];
         const nameMapping = {};
         
-
         try {
             const astTree = babelParser.parse(source, PluginOptions);
             traverse(astTree, {
@@ -204,16 +203,7 @@ module.exports = async (params) => {
                 return;
             }
 
-            // const relativePath = path.relative(process.cwd(), file);
-            // const fileBar = new ProgressBar('[:bar] 文件['+file+']处理中 :current/:total', {
-            //     complete: '=',
-            //     incomplete: ' ',
-            //     width: 20,
-            //     total: entries.length,
-            // });
-
             await asyncForEach(entries, async (entry) => {
-                // fileBar.tick();
                 if (entry.value) {
                     entry.value = entry.value.trim();
                 }

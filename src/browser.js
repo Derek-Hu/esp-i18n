@@ -11,7 +11,6 @@ module.exports = function (translatedId) {
     const translationEle = document.querySelector('p.ordinary-output.target-output');
     const translation = translationEle.textContent.trim();
 
-    debugger;
     if (translatedId) {
         return {
             id: translatedId,

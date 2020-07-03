@@ -1,3 +1,4 @@
 /dist
 /generators
 node_modules
+/coverage/
