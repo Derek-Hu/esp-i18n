@@ -8,10 +8,10 @@ const Constant = require('./constant');
 const loadLocales = require('./load');
 const BabelOption = require('./babel');
 const paramParser = require('./param');
-const translateByRemote = require('./translateByRemote');
+const browserService = require('./browserService');
 const ProgressBar = require('progress');
 
-const translation = translateByRemote.translate;
+const translation = browserService.translate;
 
 async function asyncForEach(array, callback) {
     for (let index = 0; index < array.length; index++) {
@@ -97,7 +97,7 @@ module.exports = async (params) => {
         let importMeta = null;
         const importToolNames = [];
         const nameMapping = {};
-        
+
         try {
             const astTree = babelParser.parse(source, PluginOptions);
             traverse(astTree, {
@@ -273,8 +273,5 @@ module.exports = async (params) => {
             console.log(jsContent);
         }
     });
-    const browser = translateByRemote.getBrowserInstance();
-    if (browser) {
-        await browser.close();
-    }
+    browserService.close();
 }

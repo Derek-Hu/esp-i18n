@@ -1,4 +1,4 @@
-const translateByRemote = require('./translateByRemote');
+const translateByRemote = require('./browserService');
 const babelParser = require("@babel/parser");
 const BabelOption = require('./babel');
 const traverse = require("@babel/traverse").default;

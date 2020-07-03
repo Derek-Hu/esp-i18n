@@ -4,42 +4,44 @@ const LanguageMapping = require('./languages');
 
 const waitOptions = { waitUntil: 'networkidle0' };
 
-let page;
-let browser;
+let browserInstance;
 
+const closeBrowser = async () => {
+    if (browserInstance) {
+        await browserInstance.close();
+    }
+}
 ['SIGINT', 'SIGTERM'].forEach(function (sig) {
     process.on(sig, async () => {
-        if (browser) {
-            await browser.close();
-        }
+        closeBrowser();
     });
 });
 
 async function launchBrowser(launchOptions) {
-    // console.log('launchOptions', launchOptions);
-    browser = await puppeteer.launch({
+    return await puppeteer.launch({
         headless: launchOptions.headless !== false,
         args: launchOptions.args,
     });
-    // console.log('open page');
-    page = await browser.newPage();
+}
+
+module.exports.close = closeBrowser;
+
+module.exports.translate = async function (launchOptions, words, language, translationId, TranslationContainer, duplicateKeys, pageInstance) {
+
+    let page;
+    // if (pageInstance) {
+    //     // jest 生成的实例
+    //     page = pageInstance;
+    // }
     
-    await page.setViewport({
-        width: 1680,
-        height: 947,
-        deviceScaleFactor: 1,
-    });
-}
-
-module.exports.getBrowserInstance = function () {
-    return browser;
-}
-
-// module.exports.launchBrowser = launchBrowser;
-module.exports.translate = async function (launchOptions, words, language, translationId, TranslationContainer, duplicateKeys) {
-
-    if (!page) {
-        await launchBrowser(launchOptions);
+    if(!page){
+        browserInstance = await launchBrowser(launchOptions);
+        page = await browserInstance.newPage();
+        await page.setViewport({
+            width: 1680,
+            height: 947,
+            deviceScaleFactor: 1,
+        });
     }
     const transformdWords = words ? words.replace(/\%/g, '') : '';
     const selector = 'p.ordinary-output.target-output';
@@ -55,7 +57,7 @@ module.exports.translate = async function (launchOptions, words, language, trans
             TranslationContainer[language] = {};
         }
 
-        if(!TranslationContainer['zh']){
+        if (!TranslationContainer['zh']) {
             TranslationContainer['zh'] = {};
         }
 
@@ -72,6 +74,7 @@ module.exports.translate = async function (launchOptions, words, language, trans
 
         return validId;
     } catch (e) {
+        console.error(e);
         TranslationContainer[language][words] = words;
         console.log(`翻译【${words}】至语言【${LanguageMapping[language]}】失败：`, e);
         return null;
