@@ -30,7 +30,7 @@ module.exports = async (params) => {
             return null;
         }
         chinaValueKeyMapping[value] = id;
-        
+
         for (code of translateLanguages) {
             if (code === 'en' || code === 'zh') {
                 continue;
@@ -42,15 +42,15 @@ module.exports = async (params) => {
 
     const fileNeedProcessing = Utils.getProcessFiles(options.folders, options.excludes);
 
-    const progressBar = new ProgressBar('国际化:current/:total个文件 [:bar] :percent 耗时:elapsed秒 正在处理文件：:file', {
+    const progressBar = new ProgressBar(`国际化:current/${fileNeedProcessing.length}个文件 [:bar] :percent 耗时:elapsed秒 :msg`, {
         complete: '=',
         incomplete: ' ',
         width: 20,
-        total: fileNeedProcessing.length,
+        total: fileNeedProcessing.length + 1,
     });
     for (file of fileNeedProcessing) {
         progressBar.tick({
-            file: path.relative(process.cwd(), file),
+            msg: `正在处理文件：${path.relative(process.cwd(), file)}`,
         });
         const fileContent = fs.readFileSync(file, 'UTF8');
 
@@ -77,7 +77,7 @@ module.exports = async (params) => {
                 }
 
                 const isSucess = !Utils.isIdEmpty(id) && entry.value;
-                if(isSucess || !entry.value){
+                if (isSucess || !entry.value) {
                     source = source.slice(0, entry.start) + entry.getReplacement(id, finalFuncName) + source.slice(entry.end);
                 }
             }
@@ -93,5 +93,6 @@ module.exports = async (params) => {
             console.log(jsContent);
         }
     };
+    progressBar.tick();
     browserService.close();
 }
