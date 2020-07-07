@@ -32,10 +32,10 @@ module.exports = async (params) => {
             return null;
         }
         chinaValueKeyMapping[value] = id;
-
+        
         for (code of translateLanguages) {
             if (code === 'en' || code === 'zh') {
-                return;
+                continue;
             }
             await translation(launchOptions, value, code, id, TranslationContainer, duplicateKeys);
         }
@@ -72,12 +72,12 @@ module.exports = async (params) => {
                 if (entry.value) {
                     entry.value = entry.value.trim();
                     if (chinaValueKeyMapping[entry.value] !== undefined) {
-                        console.log('复用中...'+entry.value);
                         id = chinaValueKeyMapping[entry.value];
                     } else {
                         id = await getId(entry.value);
                     }
                 }
+
                 if (id !== null) {
                     source = source.slice(0, entry.start) + entry.getReplacement(id, finalFuncName) + source.slice(entry.end);
                 }
