@@ -12,5 +12,6 @@ const render = () => {
         <p>{'子标题'}</p>
         <p>{isTrue ? '开心' : '不开心'}</p>
         <input placeholder={'子标题'} />
+        <div slot="title">剩余<span>发bbb行</span>额度不足100</div>
     </>
 }

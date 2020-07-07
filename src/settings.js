@@ -1,7 +1,6 @@
 // https://babeljs.io/docs/en/next/babel-parser#ECMAScript-proposals
 // Babel AST 解析选项设置
-
-module.exports = function (isFlow) {
+module.exports.babelConfig = function (isFlow) {
     return {
         sourceType: 'unambiguous',
         plugins: [
@@ -22,3 +21,5 @@ module.exports = function (isFlow) {
         ],
     }
 };
+
+module.exports.Header = `export default `;

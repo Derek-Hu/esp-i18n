@@ -1,9 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const Utils = require('./utils');
-const Constant = require('./constant');
-const loadLocales = require('./load');
-const BabelOption = require('./babel');
+const settings = require('./settings');
 const paramParser = require('./param');
 const browserService = require('./browserService');
 const ProgressBar = require('progress');
@@ -14,10 +12,10 @@ const translation = browserService.translate;
 module.exports = async (params) => {
 
     const options = paramParser(params);
-    const {launchOptions, translateLanguages} = options;
-    const babelConfig = BabelOption(options.isFlow);
+    const { launchOptions, translateLanguages } = options;
+    const babelConfig = settings.babelConfig(options.isFlow);
 
-    const TranslationContainer = loadLocales(translateLanguages, options.target);
+    const TranslationContainer = Utils.loadLocales(translateLanguages, options.target);
 
     console.log('TranslationContainer', TranslationContainer);
 
@@ -79,7 +77,7 @@ module.exports = async (params) => {
                         id = await getId(entry.value);
                     }
                 }
-                if(id!==null){
+                if (id !== null) {
                     source = source.slice(0, entry.start) + entry.getReplacement(id, finalFuncName) + source.slice(entry.end);
                 }
             }
@@ -90,7 +88,7 @@ module.exports = async (params) => {
                 // if (!options.hasEnglish && language === 'en') {
                 //     return;
                 // }
-                Utils.writeSync(path.resolve(options.target, `${language}.js`), `${Constant.Header}${JSON.stringify(TranslationContainer[language], null, 2)}`);
+                Utils.writeSync(path.resolve(options.target, `${language}.js`), `${settings.Header}${JSON.stringify(TranslationContainer[language], null, 2)}`);
             });
             Utils.writeSync(path.resolve(options.srcTarget, path.relative(options.baseFolder, file)), source);
         } catch (e) {

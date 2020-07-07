@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs');
+const settings = require('./settings');
 
 // 创建文件
 function createFolderIfNotExists(outputFilePath) {
@@ -86,3 +87,22 @@ const getProcessFiles = (folders, excludes) => {
     }, []);
 };
 module.exports.getProcessFiles = getProcessFiles;
+
+module.exports.loadLocales = function (languages, baseFolder) {
+    const resources = {};
+
+    if (!languages || !languages.length) {
+        return resources;
+    }
+    languages.forEach(language => {
+        try {
+            const fileContent = fs.readFileSync(path.resolve(baseFolder, `${language}.js`), 'UTF8');
+            resources[language] = eval(`${fileContent.replace(settings.Header, 'false? null: ')}`);
+        } catch (e) { }
+
+        if (!resources[language]) {
+            resources[language] = {};
+        }
+    });
+    return resources;
+}

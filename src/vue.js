@@ -1,6 +1,6 @@
 const translateByRemote = require('./browserService');
 const babelParser = require("@babel/parser");
-const BabelOption = require('./babel');
+const settings = require('./settings');
 const traverse = require("@babel/traverse").default;
 
 const translation = translateByRemote.translate;
@@ -35,7 +35,7 @@ const updateModifedScripts = (source, newSource) => {
 }
 
 const parseVueData = (source, i18n, IDName) => {
-    const PluginOptions = BabelOption(false);
+    const PluginOptions = settings.babelConfig(false);
     const astTree = babelParser.parse(source, PluginOptions);
     const actions = [];
     traverse(astTree, {
