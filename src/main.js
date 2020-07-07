@@ -17,8 +17,6 @@ module.exports = async (params) => {
 
     const TranslationContainer = Utils.loadLocales(translateLanguages, options.target);
 
-    console.log('TranslationContainer', TranslationContainer);
-
     const chinaValueKeyMapping = Object.keys(TranslationContainer['zh']).reduce((all, chinaId) => {
         all[TranslationContainer['zh'][chinaId]] = chinaId;
         return all;
@@ -78,7 +76,8 @@ module.exports = async (params) => {
                     }
                 }
 
-                if (id !== null) {
+                const isSucess = !Utils.isIdEmpty(id) && entry.value;
+                if(isSucess || !entry.value){
                     source = source.slice(0, entry.start) + entry.getReplacement(id, finalFuncName) + source.slice(entry.end);
                 }
             }
@@ -86,9 +85,6 @@ module.exports = async (params) => {
             source = wrapper && placeholder ? wrapper.replace(placeholder, source) : source;
 
             Object.keys(TranslationContainer).forEach(language => {
-                // if (!options.hasEnglish && language === 'en') {
-                //     return;
-                // }
                 Utils.writeSync(path.resolve(options.target, `${language}.js`), `${settings.Header}${JSON.stringify(TranslationContainer[language], null, 2)}`);
             });
             Utils.writeSync(path.resolve(options.srcTarget, path.relative(options.baseFolder, file)), source);

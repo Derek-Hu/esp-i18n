@@ -139,7 +139,6 @@ const parseVueData = (source, i18n, IDName) => {
 const projectIds = {};
 
 module.exports = async (filepath, content, launchOptions) => {
-    // console.log(filepath);
     let lines = content.split('\n');
 
     const IDName = 'Labels';
@@ -182,11 +181,8 @@ module.exports = async (filepath, content, launchOptions) => {
             newLines.push(line);
             continue;
         }
-        // console.log(`${processIdx}/${lines.length}`);
-
         const lineWords = line.match(/\s*([^>{"'}<]*[\u4e00-\u9fa5]+[^<{"'}>]*)\s*/g);
 
-        // console.log('lineWords', lineWords);
         if (lineWords && lineWords.length) {
             if (lineWords.length === 1) {
 
@@ -206,7 +202,6 @@ module.exports = async (filepath, content, launchOptions) => {
                 }
                 if (attrMatch && attrMatch[0]) {
                     line = line.replace(attrMatch[0], `:${attrMatch[1]}="${IDName}.${vid}"`);
-                    // console.log('attrMatch', line, attrMatch);
                 }
 
                 if (!attrMatch) {
@@ -227,9 +222,7 @@ module.exports = async (filepath, content, launchOptions) => {
         const scripts = getVueScriptContent(content);
         const { source: modifiedScripts, isUpdated } = parseVueData(scripts, labels, IDName);
         const modified = updateModifedScripts(newSource, modifiedScripts);
-        // console.log(modifiedScripts);
         if (isUpdated) {
-            // console.log('file: ' + filepath);
             return modified;
         }
         return '<templte>\nLabels: {\n' + Object.keys(labels).map(w => `${w}=${labels[w]}`).join(',\n') + '\n}\n</templte>\n' + modified;

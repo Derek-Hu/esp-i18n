@@ -10,7 +10,6 @@ module.exports = function (translatedId) {
     const translationEle = document.querySelector('p.ordinary-output.target-output');
     const translation = translationEle.textContent.trim();
 
-    console.log('translation', translation);
     debugger;
     if (translatedId) {
         return {
