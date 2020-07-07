@@ -6,7 +6,7 @@ import Locales from '~/locale-tools';
 
 console.log(another);
 
-console.log('english-empty');
+console.log('english-哦哦-empty');
 
 const render = () => {
     return <div>happy</div>

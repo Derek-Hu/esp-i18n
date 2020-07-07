@@ -104,6 +104,12 @@ module.exports = (source, babelConfig, { localToolsPath, jsFunc }) => {
     const finalImport = [];
     let finalFuncName = jsFunc;
 
+    if (!entries.length) {
+        return {
+            finalFuncName,
+            entries,
+        }
+    }
     if (!importedAttrs.length) {
         entries.push({
             start: 0,
@@ -123,9 +129,11 @@ module.exports = (source, babelConfig, { localToolsPath, jsFunc }) => {
             }
         });
 
-        finalFuncName = Utils.getUniqueImportId(jsFunc, importParts);
+        if(importParts[jsFunc]!==jsFunc){
+            finalFuncName = Utils.getUniqueImportId(jsFunc, importParts);
+        }
 
-        importParts[jsFunc] = finalFuncName;
+        importParts[finalFuncName] = jsFunc;
 
         if (importDefaults.length) {
             importDefaults.forEach(importDefault => {
@@ -133,18 +141,19 @@ module.exports = (source, babelConfig, { localToolsPath, jsFunc }) => {
             });
         }
 
-        const parts = Object.keys(importParts).map(key => {
-            return importParts[key] === key ? key : `${importParts[key]} as ${key}`;
+        const parts = Object.keys(importParts).map(localKey => {
+            return importParts[localKey] === localKey ? localKey : `${importParts[localKey]} as ${localKey}`;
         }).join(', ');
 
         finalImport.push(`import { ${parts} } from '${localToolsPath}';\n`);
-        
-        entries.push({
-            start: importedAttrs[0].start,
-            end: importedAttrs[0].end,
-            getReplacement: () => finalImport.join(''),
-        });
 
+        importedAttrs.forEach((importAttr, index) => {
+            entries.push({
+                start: importAttr.start,
+                end: importAttr.end,
+                getReplacement: index === 0 ? () => finalImport.join('') : () => '',
+            });
+        });
     }
     return {
         finalFuncName,
