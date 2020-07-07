@@ -26,12 +26,14 @@ async function launchBrowser(launchOptions) {
 
 module.exports.close = closeBrowser;
 
+let page;
+
 module.exports.translate = async function (launchOptions, words, language, translationId, TranslationContainer, duplicateKeys) {
 
-    let page;
-
-    if (!page) {
+    if (!browserInstance) {
         browserInstance = await launchBrowser(launchOptions);
+    }
+    if (!page) {
         page = await browserInstance.newPage();
         await page.setViewport({
             width: 1680,
@@ -39,11 +41,11 @@ module.exports.translate = async function (launchOptions, words, language, trans
             deviceScaleFactor: 1,
         });
     }
-    
+
     if (!TranslationContainer[language]) {
         TranslationContainer[language] = {};
     }
-    
+
     if (!TranslationContainer['zh']) {
         TranslationContainer['zh'] = {};
     }

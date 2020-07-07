@@ -4,7 +4,7 @@ i18n({
     // 扫描目录
     folders: ['test'],
     // 忽略/排除目录，默认会忽略掉[target]参数指定的目录
-    // excludes: ['src/api', 'src/__tests', 'src/components/intl-switch'],
+    excludes: ['test/vue', 'test/placeholder'],
     // 自定义工具，默认为：import { FormattedMessage, formatMessage } from '~/locale-tools';
     // 使用[jsName]和[componentName]自定义工具名称
     // 使用[localTools]指定引用路径，默认为'umi-plugin-locale'

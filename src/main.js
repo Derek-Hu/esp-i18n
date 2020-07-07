@@ -80,7 +80,7 @@ module.exports = async (params) => {
                     }
                 }
                 if(id!==null){
-                    source = source.slice(0, entry.start) + n.getReplacement(id, finalFuncName) + source.slice(entry.end);
+                    source = source.slice(0, entry.start) + entry.getReplacement(id, finalFuncName) + source.slice(entry.end);
                 }
             }
 
