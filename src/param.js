@@ -21,7 +21,11 @@ module.exports = function (params) {
     const excludes = excludesFolders.map(exclude => path.resolve(process.cwd(), exclude));
     excludes.push(target);
 
-    const hasEnglish = translateLanguages.indexOf('en') !== -1;
+    // const hasEnglish = translateLanguages.indexOf('en') !== -1;
+
+    if(!translateLanguages.includes('zh')){
+        translateLanguages.push('zh');
+    }
 
     console.log('Excludes: ' + excludes);
 
@@ -36,7 +40,7 @@ module.exports = function (params) {
         folders: params.folders || [],
         baseFolder: process.cwd(),
         srcTarget: path.resolve(process.cwd(), params.srcCopyFolder || ''),
-        localToolsPath: params.localTools || 'umi-plugin-locale',
+        localToolsPath: params.localTools,
         isFlow: params.isFlow === true,
         launchOptions,
         target: target,
@@ -56,7 +60,7 @@ module.exports = function (params) {
             }
             return [content];
         },
-        hasEnglish: hasEnglish,
+        // hasEnglish: hasEnglish,
         translateLanguages: translateLanguages,
         excludes: excludes,
         jsFunc: params.jsName || 'formatMessage',

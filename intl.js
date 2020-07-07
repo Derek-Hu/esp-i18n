@@ -20,7 +20,7 @@ i18n({
     // translate: ['en', 'th'],
 
     // 指定zh.js en.js 生成的目录，默认为'src/locale'
-    target: 'src/locale-test',
+    target: 'dist/locale-test',
     // 是否打开浏览器，可查看自动抓取翻译等效果，若浏览器页面出现卡顿，在此模式下则可人工干预；默认为关闭
     headless: false,
 
