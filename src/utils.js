@@ -42,3 +42,47 @@ module.exports.writeSync = function (outputFilePath, content) {
     createFolderIfNotExists(outputFilePath);
     fs.writeFileSync(outputFilePath, content);
 }
+
+module.exports.getUniqueId = (id, value, zhLocaleData, duplicateKeys) => {
+    let validId = id;
+    while ((validId in zhLocaleData) && (zhLocaleData[validId] !== value)) {
+        if (!duplicateKeys[validId]) {
+            duplicateKeys[validId] = 1;
+        } else {
+            duplicateKeys[validId] += 1;
+        }
+        validId = `${validId}-${duplicateKeys[validId]}`;
+    }
+    return validId;
+}
+
+
+module.exports.getUniqueImportId = (id, all) => {
+    const duplicateKeys = {};
+    let validId = id;
+    while (validId in all) {
+        if (!duplicateKeys[validId]) {
+            duplicateKeys[validId] = 1;
+        } else {
+            duplicateKeys[validId] += 1;
+        }
+        validId = `${validId}${duplicateKeys[validId]}`;
+    }
+    return validId;
+}
+
+const getProcessFiles = (folders, excludes) => {
+    return folders.reduce((files, folder) => {
+        const jsFiles = getJSFileList(path.resolve(process.cwd(), folder));
+        jsFiles.forEach(file => {
+            const isExcludes = excludes.some(exclude => {
+                return file.indexOf(exclude) === 0;
+            });
+            if (!isExcludes) {
+                files = files.concat(jsFiles);
+            }
+        });
+        return files;
+    }, []);
+};
+module.exports.getProcessFiles = getProcessFiles;

@@ -28,22 +28,5 @@ i18n({
     // isFlow: true,
 
     // 指定保存修改后的代码路径，默认为覆盖源文件
-    //srcCopyFolder: 'dist',
-    getSource(path, content) {
-        console.log(path);
-        if (/\.vue$/.test(path)) {
-            var contentOneLine = content;
-            const placeholder = '______';
-            const scripts = '<script>' + placeholder + '</script>';
-            const matchs = contentOneLine.match(/<script>((.*\n)*)<\/script>/);
-            const validContent = matchs && matchs[1];
-
-            return [
-                validContent,
-                contentOneLine.replace(/<script>((.*\n)*)<\/script>/, scripts),
-                placeholder
-            ];
-        }
-        return [content];
-    }
+    srcCopyFolder: 'dist',
 })

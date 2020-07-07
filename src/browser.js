@@ -1,5 +1,4 @@
 // 改函数运行在浏览器内，不能访问函数体外的变量
-
 module.exports = function (translatedId) {
 
     function formatWord(word) {
@@ -26,7 +25,7 @@ module.exports = function (translatedId) {
     const translationParts = translation.split(' ').map(formatWord).filter(v => v);
 
     const allFirstMeans = (keyMeans && keyMeans.length) ? keyMeans.map(means => {
-        const firstMeans = means.split(';');
+        const firstMeans = means.split(/[;/；]/);
         if (firstMeans && firstMeans[0]) {
             return firstMeans[0].trim();
         }

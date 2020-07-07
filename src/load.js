@@ -2,27 +2,21 @@ const fs = require('fs');
 const path = require('path');
 const Constant = require('./constant');
 
-module.exports = function loadLocales(languages, baseFolder, supportedLanguages){
+module.exports = function loadLocales(languages, baseFolder) {
     const resources = {};
 
-    if(!languages){
-        languages = [];
-    }
-    if(languages.indexOf('zh')===-1){
-        languages.push('zh');
+    if (!languages || !languages.length) {
+        return resources;
     }
     languages.forEach(language => {
-        if((language!=='zh') && !supportedLanguages[language]){
-            return;
-        }
-        try{
+        try {
             const fileContent = fs.readFileSync(path.resolve(baseFolder, `${language}.js`), 'UTF8');
             resources[language] = eval(`${fileContent.replace(Constant.Header, 'false? null: ')}`);
-        }catch(e){
+        } catch (e) { }
+
+        if (!resources[language]) {
+            resources[language] = {};
         }
     });
-    if(!resources['zh']){
-        resources['zh'] = {};
-    }
     return resources;
 }

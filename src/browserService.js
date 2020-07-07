@@ -1,7 +1,7 @@
 const browserCode = require('./browser');
 const puppeteer = require('puppeteer');
 const LanguageMapping = require('./languages');
-
+const Utils = require('./utils');
 const waitOptions = { waitUntil: 'networkidle0' };
 
 let browserInstance;
@@ -26,15 +26,11 @@ async function launchBrowser(launchOptions) {
 
 module.exports.close = closeBrowser;
 
-module.exports.translate = async function (launchOptions, words, language, translationId, TranslationContainer, duplicateKeys, pageInstance) {
+module.exports.translate = async function (launchOptions, words, language, translationId, TranslationContainer, duplicateKeys) {
 
     let page;
-    // if (pageInstance) {
-    //     // jest 生成的实例
-    //     page = pageInstance;
-    // }
-    
-    if(!page){
+
+    if (!page) {
         browserInstance = await launchBrowser(launchOptions);
         page = await browserInstance.newPage();
         await page.setViewport({
@@ -43,39 +39,31 @@ module.exports.translate = async function (launchOptions, words, language, trans
             deviceScaleFactor: 1,
         });
     }
-    const transformdWords = words ? words.replace(/\%/g, '') : '';
-    const selector = 'p.ordinary-output.target-output';
+    
+    if (!TranslationContainer[language]) {
+        TranslationContainer[language] = {};
+    }
+    
+    if (!TranslationContainer['zh']) {
+        TranslationContainer['zh'] = {};
+    }
     try {
+        const transformdWords = words ? words.replace(/\%/g, '') : '';
         await page.goto(`https://fanyi.baidu.com/#zh/${language}/${decodeURIComponent(transformdWords)}`, waitOptions);
         await page.reload();
-        await page.waitForFunction(selector => !!document.querySelector(selector), {}, selector);
+        await page.waitForFunction(selector => !!document.querySelector(selector), {}, 'p.ordinary-output.target-output');
         const datas = await page.evaluate(browserCode, translationId);
 
-        let validId = datas.id;
-
-        if (!TranslationContainer[language]) {
-            TranslationContainer[language] = {};
-        }
-
-        if (!TranslationContainer['zh']) {
-            TranslationContainer['zh'] = {};
-        }
-
-        while ((validId in TranslationContainer['zh']) && (TranslationContainer['zh'][validId] !== words)) {
-            if (!duplicateKeys[validId]) {
-                duplicateKeys[validId] = 1;
-            } else {
-                duplicateKeys[validId] += 1;
-            }
-            validId = `${validId}-${duplicateKeys[validId]}`;
-        }
+        const validId = Utils.getUniqueId(datas.id, words, TranslationContainer['zh'], duplicateKeys);
 
         TranslationContainer[language][validId] = datas.translation;
+        TranslationContainer['zh'][validId] = words;
 
         return validId;
     } catch (e) {
         console.error(e);
         TranslationContainer[language][words] = words;
+        TranslationContainer['zh'][words] = words;
         console.log(`翻译【${words}】至语言【${LanguageMapping[language]}】失败：`, e);
         return null;
     }

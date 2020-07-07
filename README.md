@@ -14,16 +14,12 @@ i18n({
     folders : ['src/components', 'src/pages'],
     // 忽略/排除目录，默认会忽略掉[target]参数指定的目录
     excludes: ['src/api'],
-    // 自定义工具，默认为：import { FormattedMessage, formatMessage } from 'umi-plugin-locale';
-    // 使用[jsName]和[componentName]自定义工具名称
-    // 使用[localTools]指定引用路径，默认为'umi-plugin-locale'
-    // localTools : 'umi-plugin-locale',
+    // 自定义工具，生成 import { formatMessage } from '~/localTools';
+    // 使用[jsName]自定义工具名称
+    localTools : '~/localTools',
 
     // Default Name: formatMessage
     // jsName: 'formatMessage',
-
-    // Default Name: FormattedMessage
-    // componentName: 'FormattedMessage',
 
     // 需进行翻译的语言，如从中文翻译至英文、泰文等，默认为英文，即['en']
     // translate: ['en', 'th'],
@@ -58,7 +54,6 @@ import Controller from 'meta.macro';
 export default class ErrorPage403 extends React.Component {
   render() {
     return <ErrorPage title="抱歉你没有菜单权限">
-      <p>请联系管理员</p>
     </ErrorPage>;
   }
 }
@@ -66,7 +61,7 @@ export default class ErrorPage403 extends React.Component {
 
 自动生成代码: 
 ```js
-import { formatMessage, FormattedMessage } from 'umi-plugin-locale';
+import { formatMessage } from '~/localTools';
 import React from 'react';
 import ErrorPage from '~/components/error-page';
 import Controller from 'meta.macro';
@@ -77,7 +72,6 @@ import Controller from 'meta.macro';
 export default class ErrorPage403 extends React.Component {
   render() {
     return <ErrorPage title={formatMessage({id: 'be-sorry-limits-of-authority'})}>
-      <p><FormattedMessage id="please-contact-the-administrator" /></p>
     </ErrorPage>;
   }
 }
