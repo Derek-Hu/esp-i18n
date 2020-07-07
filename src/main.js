@@ -52,7 +52,7 @@ module.exports = async (params) => {
     });
     for (file of fileNeedProcessing) {
         progressBar.tick({
-            file: file,
+            file: path.relative(process.cwd(), file),
         });
         const fileContent = fs.readFileSync(file, 'UTF8');
 
@@ -64,7 +64,7 @@ module.exports = async (params) => {
             const { entries, finalFuncName } = ast(source, babelConfig, options);
 
             if (!entries.length) {
-                return;
+                continue;
             }
 
             for (entry of entries) {
@@ -72,6 +72,7 @@ module.exports = async (params) => {
                 if (entry.value) {
                     entry.value = entry.value.trim();
                     if (chinaValueKeyMapping[entry.value] !== undefined) {
+                        console.log('复用中...'+entry.value);
                         id = chinaValueKeyMapping[entry.value];
                     } else {
                         id = await getId(entry.value);

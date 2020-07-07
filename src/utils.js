@@ -80,7 +80,7 @@ const getProcessFiles = (folders, excludes) => {
                 return file.indexOf(exclude) === 0;
             });
             if (!isExcludes) {
-                files = files.concat(jsFiles);
+                files = files.concat(file);
             }
         });
         return files;
