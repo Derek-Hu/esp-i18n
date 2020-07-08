@@ -1,8 +1,10 @@
-import babelConfig from '~/babel';
+import settings from '~/settings';
 import fs from 'fs';
 import path from 'path';
 
 const babelParser = require("@babel/parser");
+
+const { babelConfig } = settings;
 
 test('支持解析JS代码', () => {
     const source = fs.readFileSync(path.join(process.cwd(), 'test/code/placeholder/placeholder.js'), 'UTF8');

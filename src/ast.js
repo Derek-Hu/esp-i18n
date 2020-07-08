@@ -129,9 +129,9 @@ module.exports = (source, babelConfig, { localToolsPath, jsFunc }) => {
             }
         });
 
-        if (importParts[jsFunc] !== jsFunc) {
-            finalFuncName = Utils.getUniqueImportId(jsFunc, importParts);
-        }
+        // if (importParts[jsFunc] !== jsFunc) {
+        finalFuncName = Utils.getUniqueImportId(jsFunc, importParts);
+        // }
 
         importParts[finalFuncName] = jsFunc;
 

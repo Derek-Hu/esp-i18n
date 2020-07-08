@@ -59,7 +59,6 @@ module.exports.translate = async function (launchOptions, words, language, trans
         const validId = Utils.getUniqueId(datas.id, words, TranslationContainer['zh'], duplicateKeys);
 
         TranslationContainer[language][validId] = datas.translation;
-        TranslationContainer['zh'][validId] = words;
 
         return validId;
     } catch (e) {

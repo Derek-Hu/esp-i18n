@@ -46,28 +46,41 @@ module.exports.writeSync = function (outputFilePath, content) {
 
 module.exports.getUniqueId = (id, value, zhLocaleData, duplicateKeys) => {
     let validId = id;
+
     while ((validId in zhLocaleData) && (zhLocaleData[validId] !== value)) {
-        if (!duplicateKeys[validId]) {
-            duplicateKeys[validId] = 1;
+        if (!duplicateKeys[id]) {
+            duplicateKeys[id] = 1;
         } else {
-            duplicateKeys[validId] += 1;
+            duplicateKeys[id] += 1;
         }
-        validId = `${validId}-${duplicateKeys[validId]}`;
+        validId = `${id}-${duplicateKeys[id]}`;
     }
+    zhLocaleData[validId] = value;
     return validId;
 }
 
 
 module.exports.getUniqueImportId = (id, all) => {
+    const revert = Object.keys(all).reduce((revert, key)=>{
+        if(revert[all[key]]){
+            return revert;    
+        }
+        revert[all[key]] = key;
+        return revert;
+    }, {});
+
+    if (revert[id]) {
+        return revert[id];
+    }
     const duplicateKeys = {};
     let validId = id;
     while (validId in all) {
-        if (!duplicateKeys[validId]) {
-            duplicateKeys[validId] = 1;
+        if (!duplicateKeys[id]) {
+            duplicateKeys[id] = 1;
         } else {
-            duplicateKeys[validId] += 1;
+            duplicateKeys[id] += 1;
         }
-        validId = `${validId}${duplicateKeys[validId]}`;
+        validId = `${id}${duplicateKeys[id]}`;
     }
     return validId;
 }
