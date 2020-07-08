@@ -49,8 +49,12 @@ module.exports = async (params) => {
         width: 20,
         total: fileNeedProcessing.length * 2 + 1,
     });
+    console.log('fileNeedProcessing', fileNeedProcessing);
+    console.log('====');
     for (file of fileNeedProcessing) {
+        console.log('----');
         fileIdx++;
+        console.log('file', file);
         progressBar.tick({
             fileIdx: fileIdx,
             msg: `正在处理文件：${path.relative(process.cwd(), file)}`,
@@ -60,7 +64,6 @@ module.exports = async (params) => {
         const [jsContent, wrapper, placeholder] = options.getSource ? await options.getSource(file, fileContent) : [fileContent, null];
 
         let source = jsContent;
-
         try {
             const { entries, finalFuncName } = ast(source, babelConfig, options);
 

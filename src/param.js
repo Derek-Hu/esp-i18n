@@ -36,7 +36,7 @@ module.exports = function (params) {
         translateLanguages.push('zh');
     }
 
-    console.log('Excludes: ' + excludes);
+    // console.log('Excludes: ' + excludes);
 
     const launchOptions = {
         args: params.args,
