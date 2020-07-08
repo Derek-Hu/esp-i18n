@@ -42,14 +42,17 @@ module.exports = async (params) => {
 
     const fileNeedProcessing = Utils.getProcessFiles(options.folders, options.excludes);
 
-    const progressBar = new ProgressBar(`国际化:current/${fileNeedProcessing.length}个文件 [:bar] :percent 耗时:elapsed秒 :msg`, {
+    let fileIdx = 0;
+    const progressBar = new ProgressBar(`国际化 :fileIdx/${fileNeedProcessing.length}个文件 [:bar] :percent 耗时:elapsed秒 :msg`, {
         complete: '=',
         incomplete: ' ',
         width: 20,
-        total: fileNeedProcessing.length + 1,
+        total: fileNeedProcessing.length * 2 + 1,
     });
     for (file of fileNeedProcessing) {
+        fileIdx++;
         progressBar.tick({
+            fileIdx: fileIdx,
             msg: `正在处理文件：${path.relative(process.cwd(), file)}`,
         });
         const fileContent = fs.readFileSync(file, 'UTF8');
@@ -62,6 +65,10 @@ module.exports = async (params) => {
             const { entries, finalFuncName } = ast(source, babelConfig, options);
 
             if (!entries.length) {
+                progressBar.tick({
+                    fileIdx,
+                    // msg: `处理文件完成：${path.relative(process.cwd(), file)}`,
+                });
                 continue;
             }
 
@@ -92,7 +99,14 @@ module.exports = async (params) => {
             console.error(`解析文件失败：${file}`, e);
             console.log(jsContent);
         }
+        progressBar.tick({
+            fileIdx,
+            msg: `处理文件完成：${path.relative(process.cwd(), file)}`,
+        });
     };
-    progressBar.tick();
+    progressBar.tick({
+        fileIdx,
+        msg: '',
+    });
     browserService.close();
 }

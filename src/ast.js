@@ -129,7 +129,7 @@ module.exports = (source, babelConfig, { localToolsPath, jsFunc }) => {
             }
         });
 
-        if(importParts[jsFunc]!==jsFunc){
+        if (importParts[jsFunc] !== jsFunc) {
             finalFuncName = Utils.getUniqueImportId(jsFunc, importParts);
         }
 
@@ -145,13 +145,13 @@ module.exports = (source, babelConfig, { localToolsPath, jsFunc }) => {
             return importParts[localKey] === localKey ? localKey : `${importParts[localKey]} as ${localKey}`;
         }).join(', ');
 
-        finalImport.push(`import { ${parts} } from '${localToolsPath}';\n`);
+        finalImport.push(`import { ${parts} } from '${localToolsPath}';`);
 
         importedAttrs.forEach((importAttr, index) => {
             entries.push({
                 start: importAttr.start,
                 end: importAttr.end,
-                getReplacement: index === 0 ? () => finalImport.join('') : () => '',
+                getReplacement: () => index === 0 ? finalImport.join('') : '',
             });
         });
     }
