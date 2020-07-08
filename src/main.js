@@ -55,7 +55,6 @@ module.exports = async (params) => {
     });
     await asyncForEach(fileNeedProcessing, async file => {
         fileIdx++;
-        // console.log('file', file);
         progressBar.tick({
             fileIdx: fileIdx,
             msg: `正在处理文件：${path.relative(process.cwd(), file)}`,
@@ -71,9 +70,7 @@ module.exports = async (params) => {
             if (!entries.length) {
                 progressBar.tick({
                     fileIdx,
-                    // msg: `处理文件完成：${path.relative(process.cwd(), file)}`,
                 });
-                // console.log('file', file);
                 return;
             }
 

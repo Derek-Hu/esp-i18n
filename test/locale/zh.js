@@ -12,5 +12,6 @@ export default {
   "ha-ha": "happy哈哈，",
   "ha-ha-ha": "哈哈哈",
   "english-chinese-empty": "english-中文-empty",
-  "english---oh--": "english-哦哦-empty"
+  "english---oh--": "english-哦哦-empty",
+  "the-chinese-language-this-is-a": "这是一长串中文"
 }

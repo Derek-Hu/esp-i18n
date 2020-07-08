@@ -63,8 +63,8 @@ module.exports.translate = async function (launchOptions, words, language, trans
         return validId;
     } catch (e) {
         console.error(e);
-        TranslationContainer[language][words] = words;
-        TranslationContainer['zh'][words] = words;
+        // TranslationContainer[language][words] = words;
+        // TranslationContainer['zh'][words] = words;
         console.log(`翻译【${words}】至语言【${LanguageMapping[language]}】失败：`, e);
         return null;
     }

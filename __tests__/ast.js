@@ -3,15 +3,38 @@ import fs from 'fs';
 import i18n from '~/main';
 import parseParam from '~/param';
 
+const toolPath = '~/locale-tools';
+
+jest.setTimeout(30000);
+
+describe('使用Puppeteer百度翻译，生成zh等文件', () => {
+    const pamras = {
+        folders: ['test/code/remote'],
+        localTools: toolPath,
+        target: 'dist/test/locale',
+        srcCopyFolder: 'dist',
+    };
+
+    const parsed = parseParam(pamras);
+
+    it('使用百度翻译，生成zh，en文件', async () => {
+
+        await i18n(pamras);
+        const zhExists = fs.existsSync(path.resolve(parsed.target, 'zh.js'));
+        const enExists = fs.existsSync(path.resolve(parsed.target, 'en.js'));
+        expect(zhExists).toBe(true);
+        expect(enExists).toBe(true);
+    });
+
+});
+
 describe('解析百度翻译页面结果', () => {
-    const toolPath = '~/locale-tools';
     const pamras = {
         // 扫描目录
         folders: ['test'],
         excludes: ['test/code/vue', 'test/code/placeholder', 'test/intl.js'],
         localTools: toolPath,
         target: 'test/locale',
-        headless: false,
         srcCopyFolder: 'dist',
     };
 

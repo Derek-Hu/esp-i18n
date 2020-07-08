@@ -28,5 +28,5 @@ i18n({
     // isFlow: true,
 
     // 指定保存修改后的代码路径，默认为覆盖源文件
-    srcCopyFolder: 'dist',
+    // srcCopyFolder: 'dist',
 })

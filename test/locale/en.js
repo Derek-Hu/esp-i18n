@@ -12,5 +12,6 @@ export default {
   "ha-ha": "Ha ha,",
   "ha-ha-ha": "Ha ha ha",
   "english-chinese-empty": "English Chinese empty",
-  "english---oh--": "English - OH - empty"
+  "english---oh--": "English - OH - empty",
+  "the-chinese-language-this-is-a": "This is a long string of Chinese"
 }
