@@ -6,8 +6,13 @@ const paramParser = require('./param');
 const browserService = require('./browserService');
 const ProgressBar = require('progress');
 const ast = require('./ast');
-
 const translation = browserService.translate;
+
+async function asyncForEach(array, callback) {
+    for (let index = 0; index < array.length; index++) {
+        await callback(array[index], index, array);
+    }
+}
 
 module.exports = async (params) => {
 
@@ -31,12 +36,11 @@ module.exports = async (params) => {
         }
         chinaValueKeyMapping[value] = id;
 
-        for (code of translateLanguages) {
-            if (code === 'en' || code === 'zh') {
-                continue;
+        await asyncForEach(translateLanguages, async code => {
+            if (code !== 'en' && code !== 'zh') {
+                await translation(launchOptions, value, code, id, TranslationContainer, duplicateKeys);
             }
-            await translation(launchOptions, value, code, id, TranslationContainer, duplicateKeys);
-        }
+        });
         return id;
     }
 
@@ -50,11 +54,10 @@ module.exports = async (params) => {
         total: fileNeedProcessing.length * 2 + 1,
     });
     console.log('fileNeedProcessing', fileNeedProcessing);
-    console.log('====');
-    for (file of fileNeedProcessing) {
-        console.log('----');
+
+    await asyncForEach(fileNeedProcessing, async file => {
         fileIdx++;
-        console.log('file', file);
+        // console.log('file', file);
         progressBar.tick({
             fileIdx: fileIdx,
             msg: `正在处理文件：${path.relative(process.cwd(), file)}`,
@@ -72,10 +75,11 @@ module.exports = async (params) => {
                     fileIdx,
                     // msg: `处理文件完成：${path.relative(process.cwd(), file)}`,
                 });
-                continue;
+                // console.log('file', file);
+                return;
             }
 
-            for (entry of entries) {
+            await asyncForEach(entries, async entry => {
                 let id = null;
                 if (entry.value) {
                     entry.value = entry.value.trim();
@@ -90,7 +94,7 @@ module.exports = async (params) => {
                 if (isSucess || !entry.value) {
                     source = source.slice(0, entry.start) + entry.getReplacement(id, finalFuncName) + source.slice(entry.end);
                 }
-            }
+            });
 
             source = wrapper && placeholder ? wrapper.replace(placeholder, source) : source;
 
@@ -106,7 +110,7 @@ module.exports = async (params) => {
             fileIdx,
             msg: `处理文件完成：${path.relative(process.cwd(), file)}`,
         });
-    };
+    });
     progressBar.tick({
         fileIdx,
         msg: '',

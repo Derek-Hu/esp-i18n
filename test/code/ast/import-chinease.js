@@ -1,5 +1,5 @@
 import { Button } from 'antd';
-import '~/locale-tools';
+import LocalTools from '~/locale-tools';
 import d3 from 'd3';
 
 const isTrue = true;
