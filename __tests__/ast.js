@@ -55,18 +55,27 @@ describe('解析百度翻译页面结果', () => {
         const code = fs.readFileSync(path.resolve(baseFolder, 'test/code/ast', 'import-chinease.js'), 'UTF8');
         const isExists = code.indexOf('import { formatMessage } from ') !== -1;
         expect(isExists).toBe(true);
+
+        const call = code.indexOf('formatMessage(') !== -1;
+        expect(call).toBe(true);
     });
 
     it('支持 import "~/path"', async () => {
         const code = fs.readFileSync(path.resolve(baseFolder, 'test/code/ast', 'import-empty-chinease.js'), 'UTF8');
         const isExists = code.indexOf('import { formatMessage } from ') !== -1;
         expect(isExists).toBe(true);
+
+        const call = code.indexOf('formatMessage(') !== -1;
+        expect(call).toBe(true);
     });
 
     it('支持 JSX', async () => {
         const code = fs.readFileSync(path.resolve(baseFolder, 'test/code/ast', 'import-empty-jsx.js'), 'UTF8');
         const isExists = code.indexOf('import { formatMessage } from ') !== -1;
         expect(isExists).toBe(true);
+
+        const call = code.indexOf('formatMessage(') !== -1;
+        expect(call).toBe(true);
     });
 
     it('文件内容无中文不需要转化处理', async () => {
@@ -78,6 +87,9 @@ describe('解析百度翻译页面结果', () => {
         const code = fs.readFileSync(path.resolve(baseFolder, 'test/code/ast', 'no-import.js'), 'UTF8');
         const isExists = code.indexOf('import { formatMessage } from ') !== -1;
         expect(isExists).toBe(true);
+
+        const call = code.indexOf('formatMessage(') !== -1;
+        expect(call).toBe(true);
     });
 
     it('同一文件多次引用，保留原有代码', async () => {
@@ -88,6 +100,9 @@ describe('解析百度翻译页面结果', () => {
         expect(isToolExists).toBe(true);
         expect(isLocalesExists).toBe(true);
         expect(isExists).toBe(true);
+
+        const call = code.indexOf('formatMessage(') !== -1;
+        expect(call).toBe(true);
     });
 
     it('同一文件多行部分引用，合并部分引用为一行', async () => {
@@ -106,6 +121,9 @@ describe('解析百度翻译页面结果', () => {
         expect(formatMessage1).toBe(true);
         expect(anotherAs).toBe(true);
         expect(formatMessage).toBe(true);
+
+        const call = code.indexOf('formatMessage3(') !== -1;
+        expect(call).toBe(true);
     });
 
     it('import "path" 与 import { fs } from "path"合并', async () => {
@@ -114,5 +132,8 @@ describe('解析百度翻译页面结果', () => {
         const merged = code.indexOf(`import '${toolPath}'`) === -1;
         expect(merged).toBe(true);
         expect(isOneline).toBe(true);
+
+        const call = code.indexOf('formatMessage(') !== -1;
+        expect(call).toBe(true);
     });
 });
