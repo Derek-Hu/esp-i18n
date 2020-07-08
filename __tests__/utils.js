@@ -1,6 +1,9 @@
 import Utils from '~/utils';
 import path from 'path';
 import fs from 'fs';
+import paramParser from '~/param';
+import zh from '../test/locale/zh';
+import en from '../test/locale/en';
 
 test('扫描JS, TS, VUE文件', () => {
     const files = Utils.getJSFileList(path.resolve(process.cwd(), 'test'));
@@ -118,6 +121,59 @@ test('import as 名称唯一化', () => {
         let uniqueId = Utils.getUniqueImportId(id, all);
         expect(uniqueId).toBe(valid);
     });
+
+});
+
+test('加载现有locale文件', () => {
+
+    const options = paramParser({
+        folders: ['test'],
+        localTools: '~/locale-tools',
+        target: 'test/locale',
+    });
+
+    const badFilePath = path.resolve(options.target, 'badFile.js');
+    fs.writeFileSync(badFilePath, 'this is not js content');
+
+    const TranslationContainer = Utils.loadLocales(['zh', 'en', 'notExists', 'badFile'], options.target);
+
+    expect(TranslationContainer.notExists).toEqual({});
+    expect(TranslationContainer.badFile).toEqual({});
+    expect(TranslationContainer.zh).toEqual(zh);
+    expect(TranslationContainer.en).toEqual(en);
+
+    fs.unlinkSync(badFilePath);
+
+    expect(Utils.loadLocales([], options.target)).toEqual({});
+});
+
+
+test('正确处理需排除的文件', () => {
+
+    const options = paramParser({
+        folders: ['test'],
+        excludes: ['test/code/vue', 'test/code/placeholder'],
+        localTools: '~/locale-tools',
+        target: 'test/locale',
+    });
+
+    const fileNeedProcessing = Utils.getProcessFiles(options.folders, options.excludes);
+
+    const allFiles = options.folders.reduce((all, folder) => {
+        return all.concat(Utils.getJSFileList(folder));
+    }, []);
+
+    const excluedFiles = options.excludes.reduce((all, exclude) => {
+        return all.concat(Utils.getJSFileList(exclude));
+    }, []);
+
+    const localeFiles = Utils.getJSFileList(options.target);
+
+    expect(fileNeedProcessing.length).toBe(allFiles.length - excluedFiles.length);
+
+    localeFiles.forEach(file => {
+        expect(fileNeedProcessing.includes(file)).toBe(false);
+    })
 
 });
 

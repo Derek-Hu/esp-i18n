@@ -7,8 +7,19 @@ module.exports = function (params) {
     if (!params) {
         params = {};
     }
+    if(!params.folders){
+        throw new Error('请提供参数folders，以指定要扫描的目录');
+    }
+    params.folders.forEach(folder => {
+        if(typeof folder !== 'string'){
+            throw new Error('参数folders为字符串数组，Received: ', params.folders);
+        }
+    });
     const target = path.resolve(process.cwd(), params.target || 'src/locale');
     const excludesFolders = params.excludes || [];
+    if(params.translate && !Array.isArray(params.translate)){
+        throw new Error(`translate配置为字符串数组，如['en']，支持列表见 https://github.com/Derek-Hu/esp-i18n/blob/master/src/languages.js`)
+    }
     const translateLanguages = (params.translate && params.translate.length ? params.translate : ['en']).filter(language => {
         if (typeof language === 'string') {
             if (!(language in LanguageMapping)) {
@@ -20,8 +31,6 @@ module.exports = function (params) {
     });
     const excludes = excludesFolders.map(exclude => path.resolve(process.cwd(), exclude));
     excludes.push(target);
-
-    // const hasEnglish = translateLanguages.indexOf('en') !== -1;
 
     if(!translateLanguages.includes('zh')){
         translateLanguages.push('zh');
@@ -60,7 +69,6 @@ module.exports = function (params) {
             }
             return [content];
         },
-        // hasEnglish: hasEnglish,
         translateLanguages: translateLanguages,
         excludes: excludes,
         jsFunc: params.jsName || 'formatMessage',
