@@ -10,7 +10,7 @@
     "build:js": "babel src --out-dir generators --extensions \".js,.ts,.tsx\"",
     "prepublish": "npm run build",
     "i18n": "rm -rf dist && node test/intl.js",
-    "test": "jest --coverage",
+    "test": "rm -rf dist && jest --coverage",
     "test:only": "jest"
   },
   "repository": {

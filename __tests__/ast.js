@@ -1,22 +1,95 @@
+import path from 'path';
+import fs from 'fs';
 import i18n from '~/main';
+import parseParam from '~/param';
 
 describe('解析百度翻译页面结果', () => {
+    const toolPath = '~/locale-tools';
+    const pamras = {
+        // 扫描目录
+        folders: ['test'],
+        excludes: ['test/code/vue', 'test/code/placeholder', 'test/intl.js'],
+        localTools: toolPath,
+        target: 'test/locale',
+        headless: false,
+        srcCopyFolder: 'dist',
+    };
+
+    const parsed = parseParam(pamras);
+    const baseFolder = parsed.srcTarget;
+
     beforeAll(async () => {
-        console.log('i18n', i18n, process.cwd());
-        i18n({
-            // 扫描目录
-            folders: ['test'],
-            excludes: ['test/code/vue', 'test/code/placeholder', 'test/intl.js'],
-            localTools: '~/locale-tools',
-            target: 'test/locale',
-            headless: false,
-            srcCopyFolder: 'dist',
-        });
+        await i18n(pamras);
     });
 
-    it('存在关键字', async () => {
-        // const text = await page.evaluate(browserFunction, null);
-        // expect(text.id.indexOf('business-contract')).not.toEqual(-1);
-        // expect(text.translation).not.toBeFalsy();
+    it('支持 import {formatMessage as fm} from --> fm({id})', async () => {
+        const code = fs.readFileSync(path.resolve(baseFolder, 'test/code/ast', 'import-already.js'), 'UTF8');
+        const isExists = code.indexOf('fm(') !== -1;
+        expect(isExists).toBe(true);
+    });
+
+    it('支持 import defaultName from "~/path"', async () => {
+        const code = fs.readFileSync(path.resolve(baseFolder, 'test/code/ast', 'import-chinease.js'), 'UTF8');
+        const isExists = code.indexOf('import { formatMessage } from ') !== -1;
+        expect(isExists).toBe(true);
+    });
+
+    it('支持 import "~/path"', async () => {
+        const code = fs.readFileSync(path.resolve(baseFolder, 'test/code/ast', 'import-empty-chinease.js'), 'UTF8');
+        const isExists = code.indexOf('import { formatMessage } from ') !== -1;
+        expect(isExists).toBe(true);
+    });
+
+    it('支持 JSX', async () => {
+        const code = fs.readFileSync(path.resolve(baseFolder, 'test/code/ast', 'import-empty-jsx.js'), 'UTF8');
+        const isExists = code.indexOf('import { formatMessage } from ') !== -1;
+        expect(isExists).toBe(true);
+    });
+
+    it('文件内容无中文不需要转化处理', async () => {
+        const isExists = fs.existsSync(path.resolve(baseFolder, 'test/code/ast', 'import-empty.js'));
+        expect(isExists).toBe(false);
+    });
+
+    it('自动添加import', async () => {
+        const code = fs.readFileSync(path.resolve(baseFolder, 'test/code/ast', 'no-import.js'), 'UTF8');
+        const isExists = code.indexOf('import { formatMessage } from ') !== -1;
+        expect(isExists).toBe(true);
+    });
+
+    it('同一文件多次引用，保留原有代码', async () => {
+        const code = fs.readFileSync(path.resolve(baseFolder, 'test/code/ast', 'import-multiple-default-as.js'), 'UTF8');
+        const isToolExists = code.indexOf(`import Tools from '${toolPath}'`) !== -1;
+        const isLocalesExists = code.indexOf(`import Locales from '${toolPath}'`) !== -1;
+        const isExists = code.indexOf(`import { another as ano, formatMessage } from '${toolPath}'`) !== -1;
+        expect(isToolExists).toBe(true);
+        expect(isLocalesExists).toBe(true);
+        expect(isExists).toBe(true);
+    });
+
+    it('同一文件多行部分引用，合并部分引用为一行', async () => {
+        const code = fs.readFileSync(path.resolve(baseFolder, 'test/code/ast', 'import-multiple-default-rename.js'), 'UTF8');
+        const isOneline = code.indexOf(`import { another, formatMessage } from '${toolPath}'`) !== -1;
+        expect(isOneline).toBe(true);
+    });
+
+    it('同一属性使用as多次引用，as后与需引入属性名冲突', async () => {
+        const code = fs.readFileSync(path.resolve(baseFolder, 'test/code/ast', 'import-multiple-duplicate.js'), 'UTF8');
+        const another = code.indexOf(`another as formatMessage`) !== -1;
+        const formatMessage1 = code.indexOf(`formatMessage1`) !== -1;
+        const anotherAs = code.indexOf(`another as formatMessage2`) !== -1;
+        const formatMessage = code.indexOf(`formatMessage as formatMessage3`) !== -1;
+        expect(another).toBe(true);
+        expect(formatMessage1).toBe(true);
+        expect(anotherAs).toBe(true);
+        expect(formatMessage).toBe(true);
+    });
+
+    it('import "path" 与 import { fs } from "path"合并', async () => {
+        const code = fs.readFileSync(path.resolve(baseFolder, 'test/code/ast', 'import-multiple-func.js'), 'UTF8');
+        const isOneline = code.indexOf(`import { another, formatMessage } from '${toolPath}'`) !== -1;
+        const merged = code.indexOf(`import '${toolPath}'`) === -1;
+        expect(merged).toBe(true);
+        expect(isOneline).toBe(true);
     });
 });

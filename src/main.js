@@ -53,8 +53,6 @@ module.exports = async (params) => {
         width: 20,
         total: fileNeedProcessing.length * 2 + 1,
     });
-    console.log('fileNeedProcessing', fileNeedProcessing);
-
     await asyncForEach(fileNeedProcessing, async file => {
         fileIdx++;
         // console.log('file', file);
