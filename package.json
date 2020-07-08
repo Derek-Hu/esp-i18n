@@ -9,6 +9,7 @@
     "build:types": "tsc --emitDeclarationOnly",
     "build:js": "babel src --out-dir generators --extensions \".js,.ts,.tsx\"",
     "prepublish": "npm run build",
+    "i18n": "node test/intl.js",
     "test": "jest --coverage",
     "test:only": "jest"
   },
