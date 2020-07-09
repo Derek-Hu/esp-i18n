@@ -51,10 +51,9 @@ module.exports = function (params) {
         isFlow: params.isFlow === true,
         launchOptions,
         target: target,
-        getSource: async function (path, content) {
-            if (/\.vue$/.test(path)) {
-                var contentOneLine = await vue(path, content, launchOptions);
-                const placeholder = '________';
+        getVueSource: async function (path, content, TranslationContainer) {
+                var contentOneLine = await vue(path, content, launchOptions, TranslationContainer);
+                const placeholder = '____VUE_PLACEHOLDER____';
                 const scripts = '<script>' + placeholder + '</script>';
                 const matchs = contentOneLine.match(/<script>((.*\n)*)<\/script>/);
                 const validContent = matchs && matchs[1];
@@ -64,8 +63,6 @@ module.exports = function (params) {
                     contentOneLine.replace(/<script>((.*\n)*)<\/script>/, scripts),
                     placeholder
                 ];
-            }
-            return [content];
         },
         translateLanguages: translateLanguages,
         excludes: excludes,

@@ -1,9 +1,7 @@
-const translateByRemote = require('./browserService');
+const translation = require('./translate');
 const babelParser = require("@babel/parser");
 const settings = require('./settings');
 const traverse = require("@babel/traverse").default;
-
-const translation = translateByRemote.translate;
 
 const cammelCase = (id) => {
     if (!id) {
@@ -138,7 +136,7 @@ const parseVueData = (source, i18n, IDName) => {
 
 const projectIds = {};
 
-module.exports = async (filepath, content, launchOptions) => {
+module.exports = async (filepath, content, launchOptions, TranslationContainer) => {
     let lines = content.split('\n');
 
     const IDName = 'Labels';
@@ -147,15 +145,11 @@ module.exports = async (filepath, content, launchOptions) => {
     let isEnd = false;
     let isComment = false;
     let currentIsCommentEnd = false;
-    const TranslationContainer = {};
     const duplicateKeys = {};
 
     const labels = {};
     const newLines = [];
-    let processIdx = 0;
     for (line of lines) {
-
-        processIdx++;
 
         if (currentIsCommentEnd) {
             currentIsCommentEnd = false;
@@ -187,8 +181,12 @@ module.exports = async (filepath, content, launchOptions) => {
             if (lineWords.length === 1) {
 
                 const currentWord = lineWords[0].trim();
-
-                const id = await translation(launchOptions, currentWord, 'en', projectIds[currentWord], TranslationContainer, duplicateKeys);
+                let id;
+                if (chinaValueKeyMapping[currentWord] !== undefined) {
+                    id = chinaValueKeyMapping[currentWord];
+                } else {
+                    id = await translation(launchOptions, currentWord, 'en', projectIds[currentWord], TranslationContainer, duplicateKeys);
+                }
                 const vid = cammelCase(id);
 
                 projectIds[currentWord] = vid;
@@ -196,12 +194,22 @@ module.exports = async (filepath, content, launchOptions) => {
                 const transformedWord = currentWord.split('').map(function (k) { return '\\' + k }).join('');
                 let reg = new RegExp('(\\w+=)"' + transformedWord + '"');
                 let attrMatch = line.match(reg);
+                if (attrMatch && attrMatch[0]) {
+                    line = line.replace(attrMatch[0], `:${attrMatch[1]}"${IDName}.${vid}"`);
+                }
                 if (!attrMatch) {
                     reg = new RegExp(`(:\\w+=)"'` + transformedWord + `'"`);
                     attrMatch = line.match(reg);
+                    if (attrMatch && attrMatch[0]) {
+                        line = line.replace(attrMatch[0], `${attrMatch[1]}"${IDName}.${vid}"`);
+                    }
                 }
-                if (attrMatch && attrMatch[0]) {
-                    line = line.replace(attrMatch[0], `:${attrMatch[1]}="${IDName}.${vid}"`);
+                if (!attrMatch) {
+                    reg = new RegExp(`(["'])` + transformedWord + `\\1`);
+                    attrMatch = line.match(reg);
+                    if (attrMatch && attrMatch[0]) {
+                        line = line.replace(attrMatch[0], `${IDName}.${vid}`);
+                    }
                 }
 
                 if (!attrMatch) {

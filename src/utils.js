@@ -59,11 +59,10 @@ module.exports.getUniqueId = (id, value, zhLocaleData, duplicateKeys) => {
     return validId;
 }
 
-
 module.exports.getUniqueImportId = (id, all) => {
-    const revert = Object.keys(all).reduce((revert, key)=>{
-        if(revert[all[key]]){
-            return revert;    
+    const revert = Object.keys(all).reduce((revert, key) => {
+        if (revert[all[key]]) {
+            return revert;
         }
         revert[all[key]] = key;
         return revert;
@@ -110,12 +109,20 @@ module.exports.loadLocales = function (languages, baseFolder) {
     languages.forEach(language => {
         try {
             const fileContent = fs.readFileSync(path.resolve(baseFolder, `${language}.js`), 'UTF8');
+
             resources[language] = eval(`${fileContent.replace(settings.Header, 'false? null: ')}`);
-        } catch (e) { }
+        } catch (e) { 
+        }
 
         if (!resources[language]) {
             resources[language] = {};
         }
     });
     return resources;
+}
+
+module.exports.asyncForEach = async function (array, callback) {
+    for (let index = 0; index < array.length; index++) {
+        await callback(array[index], index, array);
+    }
 }

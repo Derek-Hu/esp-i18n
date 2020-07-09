@@ -7,26 +7,26 @@ const toolPath = '~/locale-tools';
 
 jest.setTimeout(30000);
 
-describe('使用Puppeteer百度翻译，生成zh等文件', () => {
-    const pamras = {
-        folders: ['test/code/remote'],
-        localTools: toolPath,
-        target: 'dist/test/locale',
-        srcCopyFolder: 'dist',
-    };
+// describe('使用Puppeteer百度翻译，生成zh等文件', () => {
+//     const pamras = {
+//         folders: ['test/code/remote'],
+//         localTools: toolPath,
+//         target: 'dist/test/locale',
+//         srcCopyFolder: 'dist',
+//     };
 
-    const parsed = parseParam(pamras);
+//     const parsed = parseParam(pamras);
 
-    it('使用百度翻译，生成zh，en文件', async () => {
+//     it('使用百度翻译，生成zh，en文件', async () => {
 
-        await i18n(pamras);
-        const zhExists = fs.existsSync(path.resolve(parsed.target, 'zh.js'));
-        const enExists = fs.existsSync(path.resolve(parsed.target, 'en.js'));
-        expect(zhExists).toBe(true);
-        expect(enExists).toBe(true);
-    });
+//         await i18n(pamras);
+//         const zhExists = fs.existsSync(path.resolve(parsed.target, 'zh.js'));
+//         const enExists = fs.existsSync(path.resolve(parsed.target, 'en.js'));
+//         expect(zhExists).toBe(true);
+//         expect(enExists).toBe(true);
+//     });
 
-});
+// });
 
 describe('解析百度翻译页面结果', () => {
     const pamras = {
