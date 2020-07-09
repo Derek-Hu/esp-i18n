@@ -11,10 +11,12 @@ let launchParams;
 const { asyncForEach } = Utils;
 const waitOptions = { waitUntil: 'networkidle0' };
 
+let page;
+
 const translate = async function (words, language, translationId) {
 
     if (!page) {
-        page = browserInstance.getPage(launchParams);
+        page = await browserInstance.getPage(launchParams);
     }
     try {
         const transformdWords = words ? words.replace(/\%/g, '') : '';

@@ -2,9 +2,10 @@ const translation = require('./translate');
 const babelParser = require("@babel/parser");
 const settings = require('./settings');
 const traverse = require("@babel/traverse").default;
+const Utils = require('./utils');
 
 const cammelCase = (id) => {
-    if (!id) {
+    if (Utils.isIdEmpty(id)) {
         return id;
     }
     const parts = id.split('-');
@@ -134,9 +135,7 @@ const parseVueData = (source, i18n, IDName) => {
     };
 }
 
-const projectIds = {};
-
-module.exports = async (filepath, content, launchOptions, TranslationContainer) => {
+module.exports = async (filepath, content, options) => {
     let lines = content.split('\n');
 
     const IDName = 'Labels';
@@ -145,7 +144,6 @@ module.exports = async (filepath, content, launchOptions, TranslationContainer) 
     let isEnd = false;
     let isComment = false;
     let currentIsCommentEnd = false;
-    const duplicateKeys = {};
 
     const labels = {};
     const newLines = [];
@@ -181,15 +179,7 @@ module.exports = async (filepath, content, launchOptions, TranslationContainer) 
             if (lineWords.length === 1) {
 
                 const currentWord = lineWords[0].trim();
-                let id;
-                if (chinaValueKeyMapping[currentWord] !== undefined) {
-                    id = chinaValueKeyMapping[currentWord];
-                } else {
-                    id = await translation(launchOptions, currentWord, 'en', projectIds[currentWord], TranslationContainer, duplicateKeys);
-                }
-                const vid = cammelCase(id);
-
-                projectIds[currentWord] = vid;
+                const vid = cammelCase(await translation(currentWord, options));
 
                 const transformedWord = currentWord.split('').map(function (k) { return '\\' + k }).join('');
                 let reg = new RegExp('(\\w+=)"' + transformedWord + '"');

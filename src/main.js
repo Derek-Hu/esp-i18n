@@ -7,8 +7,23 @@ const browserInstance = require('./browserInstance');
 const ProgressBar = require('progress');
 const ast = require('./ast');
 const translate = require('./translate');
+const vue = require('./vue');
 
 const {asyncForEach} = Utils;
+
+const getVueSource = async function (path, content, options) {
+    var contentOneLine = await vue(path, content, options);
+    const placeholder = '____VUE_PLACEHOLDER____';
+    const scripts = '<script>' + placeholder + '</script>';
+    const matchs = contentOneLine.match(/<script>((.*\n)*)<\/script>/);
+    const validContent = matchs && matchs[1];
+
+    return [
+        validContent,
+        contentOneLine.replace(/<script>((.*\n)*)<\/script>/, scripts),
+        placeholder
+    ];
+};
 
 module.exports = async (params) => {
 
@@ -30,7 +45,7 @@ module.exports = async (params) => {
 
         const isVueFile = /\.vue$/.test(file);
         const fileContent = fs.readFileSync(file, 'UTF8');
-        const [jsContent, wrapper, placeholder] = isVueFile ? await options.getVueSource(file, fileContent, TranslationContainer) : [fileContent, null];
+        const [jsContent, wrapper, placeholder] = isVueFile ? await getVueSource(file, fileContent, options) : [fileContent, null];
         let source = jsContent;
 
         try {

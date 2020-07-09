@@ -1,7 +1,6 @@
 // 解析用户传入参数
 const LanguageMapping = require('./languages');
 const path = require('path');
-const vue = require('./vue');
 
 module.exports = function (params) {
     if (!params) {
@@ -51,19 +50,6 @@ module.exports = function (params) {
         isFlow: params.isFlow === true,
         launchOptions,
         target: target,
-        getVueSource: async function (path, content, TranslationContainer) {
-                var contentOneLine = await vue(path, content, launchOptions, TranslationContainer);
-                const placeholder = '____VUE_PLACEHOLDER____';
-                const scripts = '<script>' + placeholder + '</script>';
-                const matchs = contentOneLine.match(/<script>((.*\n)*)<\/script>/);
-                const validContent = matchs && matchs[1];
-
-                return [
-                    validContent,
-                    contentOneLine.replace(/<script>((.*\n)*)<\/script>/, scripts),
-                    placeholder
-                ];
-        },
         translateLanguages: translateLanguages,
         excludes: excludes,
         jsFunc: params.jsName || 'formatMessage',
