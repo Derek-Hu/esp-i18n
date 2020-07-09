@@ -1051,21 +1051,6 @@ export default {
         }
       }
 
-      // 法定代表人身份证国徽面
-      // if( !this.step2.legalPersonBackOssId ){
-      //   this.$refs.step2LicenceOssId2.showErrorMsg("请上传法定代表人身份证国徽面");
-      //   return false;
-      // }
-
-      //核查身份证
-      // /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/
-      // if( this.step2.legalPersonId ){
-      //
-      // }else{
-      //   goToErr('J_Company_Step2', 1 );
-      //   this.errMsg = '请填写身份证号';
-      //   return false;
-      // }
 
       if (this.step2.legalPersonId) {
         if (!/(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/.test(this.step2.legalPersonId)) {

@@ -40,6 +40,7 @@ module.exports = async (params) => {
         total: fileNeedProcessing.length * 2 + 1,
     });
     await asyncForEach(fileNeedProcessing, async file => {
+        console.log(file);
         fileIdx++;
         progressBar.tick({ fileIdx: fileIdx, msg: `正在处理文件：${path.relative(process.cwd(), file)}` });
 
@@ -48,6 +49,7 @@ module.exports = async (params) => {
         const [jsContent, wrapper, placeholder] = isVueFile ? await getVueSource(file, fileContent, options) : [fileContent, null];
         let source = jsContent;
 
+        // console.log(source);
         try {
             const { entries, finalFuncName } = ast(source, babelConfig, options);
 
@@ -84,5 +86,5 @@ module.exports = async (params) => {
         progressBar.tick({ fileIdx, msg: `处理文件完成：${path.relative(process.cwd(), file)}` });
     });
     progressBar.tick({ fileIdx, msg: '' });
-    browserInstance.close();
+    await browserInstance.close();
 }

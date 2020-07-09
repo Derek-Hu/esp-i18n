@@ -11,7 +11,8 @@ export default {
     console.log();
     return {
       aaa: '100',
-      Labels: {aaa: '200'},
+      Labels: {aaa: '200', // 这是注释
+      },
       bbb: '300',
     };
   },

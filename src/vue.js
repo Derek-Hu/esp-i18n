@@ -4,6 +4,8 @@ const settings = require('./settings');
 const traverse = require("@babel/traverse").default;
 const Utils = require('./utils');
 
+const { asyncForEach } = Utils;
+
 const cammelCase = (id) => {
     if (Utils.isIdEmpty(id)) {
         return id;
@@ -18,15 +20,34 @@ const cammelCase = (id) => {
         return total;
     }, []).join('');
 }
-const getVueScriptContent = (source) => {
-    if (!source) {
-        return source;
+const removeComment = (source) => {
+    return source.replace(/<!--[^(<!--)]*-->/g, '');
+}
+const getTemplateContent = (source) => {
+    if (Utils.isIdEmpty(source)) {
+        return '';
     }
-    const matchs = source.match(/<script>((.*\n)*)<\/script>/);
+    source = removeComment(source);
+    const matchs = source.match(/<template>((.*\n)*)<\/template>/);
     if (matchs && matchs[1]) {
         return matchs[1];
     }
-    return source;
+    return '';
+
+}
+const getVueScriptContent = (source, filepath) => {
+    if (Utils.isIdEmpty(source)) {
+        return '';
+    }
+    source = removeComment(source);
+    const matchs = source.match(/<script>((.*\n)*)<\/script>/);
+    if (filepath && filepath.indexOf('data-return-with-already') !== -1) {
+        console.log('matchs after', matchs);
+    }
+    if (matchs && matchs[1]) {
+        return matchs[1];
+    }
+    return '';
 }
 const updateModifedScripts = (source, newSource) => {
     const scripts = getVueScriptContent(source);
@@ -47,7 +68,7 @@ const parseVueData = (source, i18n, IDName) => {
                         start: declaration.start,
                         end: declaration.end,
                         isInsert: false,
-                        getReplacement: () => `{\ndata(){\nreturn {\n ${IDName}: ${JSON.stringify(i18n, null, 2)}\n}\n}\n}`
+                        getReplacement: () => `{\n\tdata(){\n\t\treturn {\n\t\t\t ${IDName}: ${JSON.stringify(i18n, null, 2)}\n\t\t\t}\n\t\t}\n\t}`
                     });
                     return;
                 }
@@ -79,7 +100,7 @@ const parseVueData = (source, i18n, IDName) => {
                         start: body[body.length - 1].start,
                         end: body[body.length - 1].end,
                         isInsert: true,
-                        getReplacement: () => `return {\n ${IDName}: ${JSON.stringify(i18n, null, 2)}\n}`
+                        getReplacement: () => `\treturn {\n\t\t ${IDName}: ${JSON.stringify(i18n, null, 2)}\n\t\t}`
                     });
                     return;
                 }
@@ -135,6 +156,9 @@ const parseVueData = (source, i18n, IDName) => {
     };
 }
 
+const extractChinease = (val) => {
+    return val.match(/\s*([^>{"'}<]*[\u4e00-\u9fa5]+[^<{"'}>]*)\s*/g);
+}
 module.exports = async (filepath, content, options) => {
     let lines = content.split('\n');
 
@@ -147,7 +171,7 @@ module.exports = async (filepath, content, options) => {
 
     const labels = {};
     const newLines = [];
-    for (line of lines) {
+    await asyncForEach(lines, async line => {
 
         if (currentIsCommentEnd) {
             currentIsCommentEnd = false;
@@ -160,7 +184,7 @@ module.exports = async (filepath, content, options) => {
         }
         if (!isStart || isEnd) {
             newLines.push(line);
-            continue;
+            return;
         }
         if (line.indexOf('<!--') !== -1) {
             isComment = true;
@@ -171,10 +195,14 @@ module.exports = async (filepath, content, options) => {
         }
         if (isComment || currentIsCommentEnd) {
             newLines.push(line);
-            continue;
+            return;
         }
-        const lineWords = line.match(/\s*([^>{"'}<]*[\u4e00-\u9fa5]+[^<{"'}>]*)\s*/g);
+        // console.log(filepath);
+        const lineWords = extractChinease(line);
 
+        if (filepath.indexOf('data-return-with-already') !== -1) {
+            console.log('line', lineWords, line);
+        }
         if (lineWords && lineWords.length) {
             if (lineWords.length === 1) {
 
@@ -213,11 +241,14 @@ module.exports = async (filepath, content, options) => {
             }
         }
         newLines.push(line);
-    }
+    });
 
     const newSource = newLines.join('\n');
     if (Object.keys(labels).length) {
-        const scripts = getVueScriptContent(content);
+        const scripts = getVueScriptContent(content, filepath);
+        if (filepath && filepath.indexOf('data-return-with-already') !== -1) {
+            console.log('scripts after', scripts);
+        }
         const { source: modifiedScripts, isUpdated } = parseVueData(scripts, labels, IDName);
         const modified = updateModifedScripts(newSource, modifiedScripts);
         if (isUpdated) {
@@ -227,3 +258,9 @@ module.exports = async (filepath, content, options) => {
     }
     return content;
 }
+
+module.exports.getVueScriptContent = getVueScriptContent;
+
+module.exports.extractChinease = extractChinease;
+
+module.exports.getTemplateContent = getTemplateContent;
