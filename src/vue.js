@@ -172,9 +172,9 @@ const extractChinease = (val) => {
 
 const getterExpression = (vid) => {
     if (/^[\da-z_A-Z]*$/.test(vid)) {
-        return `${IDName}['${vid}']`;
+        return `${IDName}.${vid}`;
     }
-    return `${IDName}.${vid}`;
+    return `${IDName}['${vid}']`;
 }
 module.exports = async (translate, filepath, content) => {
     let lines = content.split('\n');
@@ -217,7 +217,9 @@ module.exports = async (translate, filepath, content) => {
             await asyncForEach(lineWords, async matchWordInfo => {
                 const currentWord = matchWordInfo.trim();
                 const vid = cammelCase(await translate(currentWord));
-
+                if(Utils.isIdEmpty(vid)){
+                    return;
+                }
                 const transformedWord = currentWord.split('').map(function (k) {
                     if(/[.?/\\]/.test(k)){
                         return '\\' + k 
