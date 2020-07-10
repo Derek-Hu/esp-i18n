@@ -109,7 +109,7 @@ const parseVueData = (source, i18n) => {
                         start: returnStatment.argument.start,
                         end: returnStatment.argument.end,
                         isInsert: false,
-                        getReplacement: () => `{\nLabels: ${JSON.stringify(i18n, null, 2)}\n}`
+                        getReplacement: () => `{\n${IDName}: ${JSON.stringify(i18n, null, 2)}\n}`
                     });
                     return;
                 }
@@ -119,7 +119,7 @@ const parseVueData = (source, i18n) => {
                         start: returnStatment.argument.properties[0].start,
                         end: returnStatment.argument.properties[0].end,
                         isInsert: true,
-                        getReplacement: () => `\n,Labels: ${JSON.stringify(i18n, null, 2)}`
+                        getReplacement: () => `\n,${IDName}: ${JSON.stringify(i18n, null, 2)}`
                     });
                     return;
                 }
@@ -256,7 +256,7 @@ module.exports = async (translate, filepath, content, options) => {
         if (isUpdated) {
             return modified;
         }
-        return '<templte>\nLabels: {\n' + Object.keys(labels).map(w => `${w}=${labels[w]}`).join(',\n') + '\n}\n</templte>\n' + modified;
+        return `<templte>\n${IDName}: {\n` + Object.keys(labels).map(w => `${w}=${labels[w]}`).join(',\n') + '\n}\n</templte>\n' + modified;
     }
     return content;
 }

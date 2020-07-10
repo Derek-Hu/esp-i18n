@@ -11,7 +11,7 @@ export default {
     console.log();
     return {
       aaa: '100',
-      Labels: {aaa: '200', b: 600,},
+      i18n: {aaa: '200', b: 600,},
       bbb: '300',
     };
   },

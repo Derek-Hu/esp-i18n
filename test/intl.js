@@ -17,7 +17,7 @@ i18n({
     // componentName: 'FormattedMessage',
 
     // 需进行翻译的语言，如从中文翻译至英文、泰文等，默认为英文，即['en']
-    // translate: ['en', 'th'],
+    translate: ['en', 'th'],
 
     // 指定zh.js en.js 生成的目录，默认为'src/locale'
     target: 'test/locale',
