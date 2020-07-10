@@ -116,10 +116,8 @@ describe('解析百度翻译页面结果', () => {
 
     it('正确处理vue属性', async () => {
         const after = fs.readFileSync(path.resolve(baseFolder, filePath, 'data-empty.vue'), encode);
-        expect(after.indexOf('<span :title="')!==-1).toBe(true);
-        expect(after.indexOf('<div :placeholder="')!==-1).toBe(true);
-        expect(after.indexOf('{{')!==-1).toBe(true);
-        expect(after.indexOf('}}')!==-1).toBe(true);
+        const correct = fs.readFileSync(path.resolve(process.cwd(), 'test/result', 'data-empty.vue'), encode);
+        expect(after).toBe(correct);
     });
 
     it('保留Template内部注释', async () => {

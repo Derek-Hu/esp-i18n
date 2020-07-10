@@ -85,6 +85,9 @@ module.exports.getUniqueImportId = (id, all) => {
 }
 
 const getProcessFiles = (folders, excludes) => {
+    if(!excludes){
+        excludes = [];
+    }
     return folders.reduce((files, folder) => {
         const jsFiles = getJSFileList(path.resolve(process.cwd(), folder));
         jsFiles.forEach(file => {
