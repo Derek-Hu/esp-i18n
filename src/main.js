@@ -6,7 +6,7 @@ const paramParser = require('./param');
 const browserInstance = require('./browserInstance');
 const ProgressBar = require('progress');
 const ast = require('./ast');
-const translate = require('./translate');
+const translateGenerator = require('./translate');
 const vue = require('./vue');
 
 const {asyncForEach} = Utils;
@@ -14,7 +14,7 @@ const {asyncForEach} = Utils;
 const getVueSource = async function (path, content, options) {
     var contentOneLine = await vue(path, content, options);
     const placeholder = '____VUE_PLACEHOLDER____';
-    const scripts = '<script>' + placeholder + '</script>';
+    const scripts = '<script>\n' + placeholder + '</script>';
     const matchs = contentOneLine.match(/<script>((.*\n)*)<\/script>/);
     const validContent = matchs && matchs[1];
 
@@ -28,6 +28,9 @@ const getVueSource = async function (path, content, options) {
 module.exports = async (params) => {
 
     const options = paramParser(params);
+
+    const translate = translateGenerator(options);
+
     const babelConfig = settings.babelConfig(options.isFlow);
 
     const fileNeedProcessing = Utils.getProcessFiles(options.folders, options.excludes);
@@ -40,16 +43,14 @@ module.exports = async (params) => {
         total: fileNeedProcessing.length * 2 + 1,
     });
     await asyncForEach(fileNeedProcessing, async file => {
-        console.log(file);
         fileIdx++;
         progressBar.tick({ fileIdx: fileIdx, msg: `正在处理文件：${path.relative(process.cwd(), file)}` });
 
         const isVueFile = /\.vue$/.test(file);
         const fileContent = fs.readFileSync(file, 'UTF8');
-        const [jsContent, wrapper, placeholder] = isVueFile ? await getVueSource(file, fileContent, options) : [fileContent, null];
+        const [jsContent, wrapper, placeholder] = isVueFile ? await getVueSource(translate, file, fileContent, options) : [fileContent, null];
         let source = jsContent;
 
-        // console.log(source);
         try {
             const { entries, finalFuncName } = ast(source, babelConfig, options);
 

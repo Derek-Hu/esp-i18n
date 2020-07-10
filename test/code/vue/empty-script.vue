@@ -11,17 +11,3 @@
     <div :placeholder=" isTrue ? '请输入贸易合同编号': '呵呵呵'"></div>
   </section>
 </template>
-
-<script>
-export default {
-  async mounted() {},
-  data() {},
-  methods: {
-    goToSupplierEnter() {
-      this.$router.push({
-        name: 'companyEnter'
-      });
-    }
-  }
-};
-</script>

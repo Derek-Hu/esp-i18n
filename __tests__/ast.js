@@ -7,27 +7,6 @@ const toolPath = '~/locale-tools';
 
 jest.setTimeout(30000);
 
-// describe('使用Puppeteer百度翻译，生成zh等文件', () => {
-//     const pamras = {
-//         folders: ['test/code/remote'],
-//         localTools: toolPath,
-//         target: 'dist/test/locale',
-//         srcCopyFolder: 'dist',
-//     };
-
-//     const parsed = parseParam(pamras);
-
-//     it('使用百度翻译，生成zh，en文件', async () => {
-
-//         await i18n(pamras);
-//         const zhExists = fs.existsSync(path.resolve(parsed.target, 'zh.js'));
-//         const enExists = fs.existsSync(path.resolve(parsed.target, 'en.js'));
-//         expect(zhExists).toBe(true);
-//         expect(enExists).toBe(true);
-//     });
-
-// });
-
 describe('解析百度翻译页面结果', () => {
     const pamras = {
         // 扫描目录
@@ -80,6 +59,11 @@ describe('解析百度翻译页面结果', () => {
 
     it('文件内容无中文不需要转化处理', async () => {
         const isExists = fs.existsSync(path.resolve(baseFolder, 'test/code/ast', 'import-empty.js'));
+        expect(isExists).toBe(false);
+    });
+
+    it('文件语法解析失败，无需转化', async () => {
+        const isExists = fs.existsSync(path.resolve(baseFolder, 'test/code/ast', 'syntax-error.js'));
         expect(isExists).toBe(false);
     });
 
@@ -136,4 +120,22 @@ describe('解析百度翻译页面结果', () => {
         const call = code.indexOf('formatMessage(') !== -1;
         expect(call).toBe(true);
     });
+
+    const remoteParams = {
+        folders: ['test/code/remote'],
+        localTools: toolPath,
+        target: 'dist/abc/locale2',
+        srcCopyFolder: 'dist',
+    };
+    const parsedRemote = parseParam(remoteParams);
+
+    it('使用百度翻译，生成zh，en文件', async () => {
+
+        await i18n(remoteParams);
+        const zhExists = fs.existsSync(path.resolve(parsedRemote.target, 'zh.js'));
+        const enExists = fs.existsSync(path.resolve(parsedRemote.target, 'en.js'));
+        expect(zhExists).toBe(true);
+        expect(enExists).toBe(true);
+    });
+
 });

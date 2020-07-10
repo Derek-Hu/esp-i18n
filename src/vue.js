@@ -1,10 +1,10 @@
-const translation = require('./translate');
 const babelParser = require("@babel/parser");
 const settings = require('./settings');
 const traverse = require("@babel/traverse").default;
 const Utils = require('./utils');
 
 const { asyncForEach } = Utils;
+const IDName = 'Labels';
 
 const cammelCase = (id) => {
     if (Utils.isIdEmpty(id)) {
@@ -35,15 +35,12 @@ const getTemplateContent = (source) => {
     return '';
 
 }
-const getVueScriptContent = (source, filepath) => {
+const getVueScriptContent = (source) => {
     if (Utils.isIdEmpty(source)) {
         return '';
     }
     source = removeComment(source);
     const matchs = source.match(/<script>((.*\n)*)<\/script>/);
-    if (filepath && filepath.indexOf('data-return-with-already') !== -1) {
-        console.log('matchs after', matchs);
-    }
     if (matchs && matchs[1]) {
         return matchs[1];
     }
@@ -54,7 +51,7 @@ const updateModifedScripts = (source, newSource) => {
     return source.replace(scripts, newSource);
 }
 
-const parseVueData = (source, i18n, IDName) => {
+const parseVueData = (source, i18n) => {
     const PluginOptions = settings.babelConfig(false);
     const astTree = babelParser.parse(source, PluginOptions);
     const actions = [];
@@ -127,17 +124,23 @@ const parseVueData = (source, i18n, IDName) => {
                     return;
                 }
                 if (hasLabels.value.type === 'ObjectExpression') {
-                    if (hasLabels.value.properties.length) {
+                    if (!hasLabels.value.properties.length) {
                         actions.push({
-                            start: hasLabels.value.properties[0].start,
-                            end: hasLabels.value.properties[0].end,
-                            isInsert: true,
-                            getReplacement: () => `,${Object.keys(i18n).map(key => `${key}:\`${i18n[key]}\``).join(',\n')}`
+                            start: hasLabels.value.start,
+                            end: hasLabels.value.end,
+                            getReplacement: () => `{\n${Object.keys(i18n).map(key => `\t\t${key}:\`${i18n[key]}\``).join(',\n')}\n\t}`
                         });
+                        return;
                     }
+                    actions.push({
+                        start: hasLabels.value.properties[0].start,
+                        end: hasLabels.value.properties[0].end,
+                        isInsert: true,
+                        getReplacement: () => `,${Object.keys(i18n).map(key => `${key}:\`${i18n[key]}\``).join(',\n')}`
+                    });
                 }
             }
-        },
+        }
     });
 
     const sortedEntries = actions.sort((a, b) => { return b.end - a.end });
@@ -152,17 +155,23 @@ const parseVueData = (source, i18n, IDName) => {
 
     return {
         source,
-        isUpdated: actions.length
+        isUpdated: actions.length,
+        actions,
     };
 }
 
 const extractChinease = (val) => {
     return val.match(/\s*([^>{"'}<]*[\u4e00-\u9fa5]+[^<{"'}>]*)\s*/g);
 }
-module.exports = async (filepath, content, options) => {
-    let lines = content.split('\n');
 
-    const IDName = 'Labels';
+const getterExpression = (vid) => {
+    if(/^\d/.test(vid)){
+        return `${IDName}['${vid}']`;
+    }
+    return `${IDName}.${vid}`;
+}
+module.exports = async (translate, filepath, content, options) => {
+    let lines = content.split('\n');
 
     let isStart = false;
     let isEnd = false;
@@ -197,41 +206,37 @@ module.exports = async (filepath, content, options) => {
             newLines.push(line);
             return;
         }
-        // console.log(filepath);
         const lineWords = extractChinease(line);
 
-        if (filepath.indexOf('data-return-with-already') !== -1) {
-            console.log('line', lineWords, line);
-        }
         if (lineWords && lineWords.length) {
             if (lineWords.length === 1) {
 
                 const currentWord = lineWords[0].trim();
-                const vid = cammelCase(await translation(currentWord, options));
+                const vid = cammelCase(await translate(currentWord, options));
 
                 const transformedWord = currentWord.split('').map(function (k) { return '\\' + k }).join('');
                 let reg = new RegExp('(\\w+=)"' + transformedWord + '"');
                 let attrMatch = line.match(reg);
                 if (attrMatch && attrMatch[0]) {
-                    line = line.replace(attrMatch[0], `:${attrMatch[1]}"${IDName}.${vid}"`);
+                    line = line.replace(attrMatch[0], `:${attrMatch[1]}"${getterExpression(vid)}"`);
                 }
                 if (!attrMatch) {
                     reg = new RegExp(`(:\\w+=)"'` + transformedWord + `'"`);
                     attrMatch = line.match(reg);
                     if (attrMatch && attrMatch[0]) {
-                        line = line.replace(attrMatch[0], `${attrMatch[1]}"${IDName}.${vid}"`);
+                        line = line.replace(attrMatch[0], `${attrMatch[1]}"${getterExpression(vid)}"`);
                     }
                 }
                 if (!attrMatch) {
                     reg = new RegExp(`(["'])` + transformedWord + `\\1`);
                     attrMatch = line.match(reg);
                     if (attrMatch && attrMatch[0]) {
-                        line = line.replace(attrMatch[0], `${IDName}.${vid}`);
+                        line = line.replace(attrMatch[0], `${getterExpression(vid)}`);
                     }
                 }
 
                 if (!attrMatch) {
-                    line = line.replace(currentWord, `{{${IDName}.${vid}}}`);
+                    line = line.replace(currentWord, `{{${getterExpression(vid)}}}`);
                 }
 
                 if (labels[vid] !== undefined && labels[vid] !== currentWord) {
@@ -246,10 +251,7 @@ module.exports = async (filepath, content, options) => {
     const newSource = newLines.join('\n');
     if (Object.keys(labels).length) {
         const scripts = getVueScriptContent(content, filepath);
-        if (filepath && filepath.indexOf('data-return-with-already') !== -1) {
-            console.log('scripts after', scripts);
-        }
-        const { source: modifiedScripts, isUpdated } = parseVueData(scripts, labels, IDName);
+        const { source: modifiedScripts, actions, isUpdated } = parseVueData(scripts, labels, IDName);
         const modified = updateModifedScripts(newSource, modifiedScripts);
         if (isUpdated) {
             return modified;
