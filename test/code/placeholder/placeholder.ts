@@ -41,6 +41,12 @@ const GlobalModel: GlobalModelType = {
 
   effects: {
     *fetchNotices(_, { call, put, select }) {
+
+      const msg = {
+        msg1: '这是中文',
+        msg2: "这是中文",
+        msg3: `这是中文`
+      };
       const data = yield call(queryNotices);
       yield put({
         type: 'saveNotices',

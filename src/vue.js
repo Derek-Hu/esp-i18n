@@ -60,7 +60,7 @@ const parseVueData = (source, i18n) => {
             const declaration = _node.node.declaration;
             if (declaration.type === 'ObjectExpression') {
                 const properties = declaration.properties;
-                if (!properties.length) {
+                if (!properties || !properties.length) {
                     actions.push({
                         start: declaration.start,
                         end: declaration.end,
@@ -82,7 +82,7 @@ const parseVueData = (source, i18n) => {
                     return;
                 }
                 const body = dataMethod.body ? dataMethod.body.body : null;
-                if (!body.length) {
+                if (!body || !body.length) {
                     actions.push({
                         start: dataMethod.body.start,
                         end: dataMethod.body.end,
@@ -104,7 +104,7 @@ const parseVueData = (source, i18n) => {
                 if (returnStatment.argument.type !== 'ObjectExpression') {
                     return;
                 }
-                if (!returnStatment.argument.properties.length) {
+                if (!returnStatment.argument.properties || !returnStatment.argument.properties.length) {
                     actions.push({
                         start: returnStatment.argument.start,
                         end: returnStatment.argument.end,
@@ -124,7 +124,7 @@ const parseVueData = (source, i18n) => {
                     return;
                 }
                 if (hasLabels.value.type === 'ObjectExpression') {
-                    if (!hasLabels.value.properties.length) {
+                    if (!hasLabels.value.properties || !hasLabels.value.properties.length) {
                         actions.push({
                             start: hasLabels.value.start,
                             end: hasLabels.value.end,
@@ -161,16 +161,19 @@ const parseVueData = (source, i18n) => {
 }
 
 const extractChinease = (val) => {
-    return val.match(/\s*([^>{"'}<]*[\u4e00-\u9fa5]+[^<{"'}>]*)\s*/g);
+    if (Utils.isIdEmpty(val)) {
+        return val;
+    }
+    return val.match(/\s*([^>{"`'}<]*[\u4e00-\u9fa5]+[^<{"`'}>]*)\s*/g);
 }
 
 const getterExpression = (vid) => {
-    if(/^\d/.test(vid)){
+    if (/^\d/.test(vid)) {
         return `${IDName}['${vid}']`;
     }
     return `${IDName}.${vid}`;
 }
-module.exports = async (translate, filepath, content, options) => {
+module.exports = async (translate, filepath, content) => {
     let lines = content.split('\n');
 
     let isStart = false;
@@ -207,31 +210,27 @@ module.exports = async (translate, filepath, content, options) => {
             return;
         }
         const lineWords = extractChinease(line);
-
         if (lineWords && lineWords.length) {
-            if (lineWords.length === 1) {
+            await asyncForEach(lineWords, async matchWordInfo => {
+                const currentWord = matchWordInfo.trim();
+                const vid = cammelCase(await translate(currentWord));
 
-                const currentWord = lineWords[0].trim();
-                const vid = cammelCase(await translate(currentWord, options));
-
-                const transformedWord = currentWord.split('').map(function (k) { return '\\' + k }).join('');
+                const transformedWord = currentWord.split('').map(function (k) {
+                    if(/[.?/\\]/.test(k)){
+                        return '\\' + k 
+                    }
+                    return k;
+                }).join('');
                 let reg = new RegExp('(\\w+=)"' + transformedWord + '"');
                 let attrMatch = line.match(reg);
                 if (attrMatch && attrMatch[0]) {
                     line = line.replace(attrMatch[0], `:${attrMatch[1]}"${getterExpression(vid)}"`);
                 }
                 if (!attrMatch) {
-                    reg = new RegExp(`(:\\w+=)"'` + transformedWord + `'"`);
+                    reg = new RegExp(`(["'\`])${transformedWord}\\1`);
                     attrMatch = line.match(reg);
                     if (attrMatch && attrMatch[0]) {
-                        line = line.replace(attrMatch[0], `${attrMatch[1]}"${getterExpression(vid)}"`);
-                    }
-                }
-                if (!attrMatch) {
-                    reg = new RegExp(`(["'])` + transformedWord + `\\1`);
-                    attrMatch = line.match(reg);
-                    if (attrMatch && attrMatch[0]) {
-                        line = line.replace(attrMatch[0], `${getterExpression(vid)}`);
+                        line = line.replace(reg, getterExpression(vid));
                     }
                 }
 
@@ -243,7 +242,7 @@ module.exports = async (translate, filepath, content, options) => {
                     console.error('出现重复ID' + filepath + ':\n', labels[vid], currentWord);
                 }
                 labels[vid] = currentWord;
-            }
+            });
         }
         newLines.push(line);
     });

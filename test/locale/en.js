@@ -131,5 +131,19 @@ export default {
   "logon-apply-for-examine-and-verify-fail": "Your registration application information is not approved",
   "logon-apply-for-examine-and-verify-fail-1": "Your registration application information is not approved!",
   "reasons-for-rejection": "Reasons for rejection:",
-  "re-submit-after-editing": "Re submit after editing"
+  "re-submit-after-editing": "Re submit after editing",
+  "hot-issues": "Hot issues",
+  "other": "other",
+  "repayment": "repayment",
+  "loan": "loan",
+  "quota-application": "Quota application",
+  "interesting": "Interesting",
+  "photos-of-acceptance-documents": "Photos of acceptance documents",
+  "hehe-hehe-2": "Hehe hehe 2",
+  "same-content": "Same content",
+  "this-is-a-string": "This is a string",
+  "word-string-but-content-its": "It's a string, but it's very long",
+  "is-true`": "Is true`",
+  "word-string-this-is-the": "This is the 0.30 string",
+  "word-string-but-rate-of-progress-content": "This is a string, but the 3 / 10 schedule is very long"
 }

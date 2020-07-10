@@ -131,5 +131,19 @@ export default {
   "logon-apply-for-examine-and-verify-fail": "您的注册申请资料审核不通过",
   "logon-apply-for-examine-and-verify-fail-1": "您的注册申请资料审核不通过!",
   "reasons-for-rejection": "拒绝原因：",
-  "re-submit-after-editing": "编辑后重新提交"
+  "re-submit-after-editing": "编辑后重新提交",
+  "hot-issues": "热门问题",
+  "other": "其它",
+  "repayment": "还款",
+  "loan": "借款",
+  "quota-application": "额度申请",
+  "interesting": "呵呵呵",
+  "photos-of-acceptance-documents": "验收单据照片",
+  "hehe-hehe-2": "呵呵呵2",
+  "same-content": "相同内容",
+  "this-is-a-string": "这是字串",
+  "word-string-but-content-its": "这是字串，但是内容很长",
+  "is-true`": "isTrue ? `呵呵呵2`: `呵呵呵`",
+  "word-string-this-is-the": "这是0.30字串",
+  "word-string-but-rate-of-progress-content": "这是字串，但是3/10进度内容很长"
 }

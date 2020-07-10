@@ -11,8 +11,8 @@ const vue = require('./vue');
 
 const {asyncForEach} = Utils;
 
-const getVueSource = async function (path, content, options) {
-    var contentOneLine = await vue(path, content, options);
+const getVueSource = async function (translate, path, content) {
+    var contentOneLine = await vue(translate, path, content);
     const placeholder = '____VUE_PLACEHOLDER____';
     const scripts = '<script>\n' + placeholder + '</script>';
     const matchs = contentOneLine.match(/<script>((.*\n)*)<\/script>/);
@@ -48,7 +48,7 @@ module.exports = async (params) => {
 
         const isVueFile = /\.vue$/.test(file);
         const fileContent = fs.readFileSync(file, 'UTF8');
-        const [jsContent, wrapper, placeholder] = isVueFile ? await getVueSource(translate, file, fileContent, options) : [fileContent, null];
+        const [jsContent, wrapper, placeholder] = isVueFile ? await getVueSource(translate, file, fileContent) : [fileContent, null];
         let source = jsContent;
 
         try {

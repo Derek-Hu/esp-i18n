@@ -39,6 +39,12 @@ const AutoComplete: React.RefForwardingComponent<Select, AutoCompleteProps> = (p
 
   const selectRef = React.useRef<Select>();
 
+  const msg = {
+    msg1: '这是中文',
+    msg2: "这是中文",
+    msg3: `这是中文`
+  };
+  
   React.useImperativeHandle<Select, Select>(ref, () => selectRef.current!);
 
   // ============================= Input =============================

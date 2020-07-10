@@ -27,7 +27,9 @@ class FakeMath {
     }
 
     static random() {
-        console.log('I heard you like random numbers…')
+        console.log('这是中文');
+        console.log("这是中文");
+        console.log(`这是中文`);
         return FakeMath.computeRandomNumber();
     }
 }

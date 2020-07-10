@@ -9,8 +9,11 @@ export default class ReportPage extends React.Component {
 
   render() {
     const { list } = this.state;
+    const msg = '这是中文';
+    const msg2 = "这是中文";
+    const msg3 = `这是中文`;
     return (
-      <ul>
+      <ul>这是中文
         {
           list.map(li => <li key={li}>{li}</li>)
         }

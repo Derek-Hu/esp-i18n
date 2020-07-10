@@ -2,9 +2,9 @@ const i18n = require('../src/main');
 
 i18n({
     // 扫描目录
-    folders: ['test'],
+    folders: ['test/code'],
     // 忽略/排除目录，默认会忽略掉[target]参数指定的目录
-    excludes: ['test/code/vue', 'test/code/placeholder', 'test/intl.js'],
+    // excludes: ['test/code/vue', 'test/code/placeholder', 'test/intl.js'],
     // 自定义工具，默认为：import { FormattedMessage, formatMessage } from '~/locale-tools';
     // 使用[jsName]和[componentName]自定义工具名称
     // 使用[localTools]指定引用路径，默认为'umi-plugin-locale'
