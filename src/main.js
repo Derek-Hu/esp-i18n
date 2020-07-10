@@ -16,7 +16,7 @@ const getVueSource = async function (translate, path, content) {
     const placeholder = '____VUE_PLACEHOLDER____';
     const scripts = '<script>\n' + placeholder + '</script>';
     const matchs = contentOneLine.match(/<script>((.*\n)*)<\/script>/);
-    const validContent = matchs && matchs[1];
+    const validContent = matchs && matchs[1] ? matchs[1] : '';
 
     return [
         validContent,

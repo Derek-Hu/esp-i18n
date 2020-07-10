@@ -19,7 +19,7 @@ const getSourceTemplateCode = (source) => {
     const code = vue.getTemplateContent(source);
     const chinas = code.split('\n').reduce((all, line) => {
         const matches = vue.extractChinease(line);
-        if (matches && matches.length === 1) {
+        if (matches && matches.length) {
             matches.forEach(m => {
                 all[m] = true;
             });
