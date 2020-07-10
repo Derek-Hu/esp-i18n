@@ -16,6 +16,9 @@ const cammelCase = (id) => {
             total.push(part);
             return total;
         }
+        if(part === ''){
+            return total;
+        }
         total.push(part[0].toUpperCase() + part.substring(1));
         return total;
     }, []).join('');
