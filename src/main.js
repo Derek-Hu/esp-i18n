@@ -55,7 +55,7 @@ module.exports = async (params) => {
             const { entries, finalFuncName } = ast(source, babelConfig, options);
 
             if (!entries.length) {
-                progressBar.tick({ fileIdx });
+                progressBar.tick({ fileIdx, msg: '' });
                 return;
             }
 
