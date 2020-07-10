@@ -145,5 +145,16 @@ export default {
   "word-string-but-content-its": "这是字串，但是内容很长",
   "is-true`": "isTrue ? `呵呵呵2`: `呵呵呵`",
   "word-string-this-is-the": "这是0.30字串",
-  "word-string-but-rate-of-progress-content": "这是字串，但是3/10进度内容很长"
+  "word-string-but-rate-of-progress-content": "这是字串，但是3/10进度内容很长",
+  "borrow-or-lend-money-risks-invest-prudent": "借贷有风险，投资?需谨慎",
+  "borrow-or-lend-money-risks-invest-prudent-1": "借贷\\有风险，*投资*需谨慎(元)",
+  "borrow-or-lend-money-risk-invest-there": "借贷有.风险[投资",
+  "need": "需",
+  "caution": "谨慎]",
+  "borrow-or-lend-money-risks-invest-prudent-2": "(借贷有风险\\100投资需谨慎)",
+  "borrow-or-lend-money-risk-invest-prudent": "借贷/风险(投资)需谨慎",
+  "borrow-or-lend-money-risk-invest-prudent-1": "借贷/风险=3(投资)需谨慎",
+  "earth-?-2018-huanyu": "©2018 环宇信链 辽ICP备",
+  "8003078---1": "8003078号-1",
+  "a-major-city-in-liaoning-corporation-dalian-private": "大连市民间借贷服务有限公司"
 }

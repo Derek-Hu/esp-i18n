@@ -171,7 +171,7 @@ const extractChinease = (val) => {
 }
 
 const getterExpression = (vid) => {
-    if (/^[\da-z_A-Z]*$/.test(vid)) {
+    if (/^[a-z_A-Z]+[\da-z_A-Z]*$/.test(vid)) {
         return `${IDName}.${vid}`;
     }
     return `${IDName}['${vid}']`;

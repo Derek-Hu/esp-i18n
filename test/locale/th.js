@@ -12,5 +12,16 @@ export default {
   "word-string-but-content-its": "มันเป็นสายแต่มันยาวมาก",
   "is-true`": "ฉันคิดว่ามันเป็นเรื่องจริงสำหรับฉันที่จะทำมัน",
   "word-string-this-is-the": "นี่คือสาย <NU>0.30",
-  "word-string-but-rate-of-progress-content": "มันเป็นสายแต่ 3-10 มีความคืบหน้ามาก"
+  "word-string-but-rate-of-progress-content": "มันเป็นสายแต่ 3-10 มีความคืบหน้ามาก",
+  "borrow-or-lend-money-risks-invest-prudent": "มีความเสี่ยงในการกู้ยืมเงินและการลงทุน",
+  "borrow-or-lend-money-risks-invest-prudent-1": "มีความเสี่ยงในการให้กู้ยืมเงิน",
+  "borrow-or-lend-money-risk-invest-there": "ความเสี่ยงของการกู้ยืมเงินและการลงทุน",
+  "need": "ต้องการ",
+  "caution": "ระมัดระวัง",
+  "borrow-or-lend-money-risks-invest-prudent-2": "มีความเสี่ยงในการให้กู้ยืมเงิน",
+  "borrow-or-lend-money-risk-invest-prudent": "ระมัดระวังในการให้กู้ยืมเงินและบัญชี",
+  "borrow-or-lend-money-risk-invest-prudent-1": "การดูแลเป็นสิ่งจำเป็นสำหรับการกู้ยืมเงิน",
+  "earth-?-2018-huanyu": "การเตรียมการของห่วงโซ่การสื่อสารโทรคมนาคมลิขสิทธิ์",
+  "8003078---1": "ไม่ฉัน",
+  "a-major-city-in-liaoning-corporation-dalian-private": "Dalian บริการสินเชื่อพื้นบ้านจำกัด"
 }

@@ -145,5 +145,16 @@ export default {
   "word-string-but-content-its": "It's a string, but it's very long",
   "is-true`": "Is true`",
   "word-string-this-is-the": "This is the 0.30 string",
-  "word-string-but-rate-of-progress-content": "This is a string, but the 3 / 10 schedule is very long"
+  "word-string-but-rate-of-progress-content": "This is a string, but the 3 / 10 schedule is very long",
+  "borrow-or-lend-money-risks-invest-prudent": "There are risks in borrowing, so investment should be cautious",
+  "borrow-or-lend-money-risks-invest-prudent-1": "Loan / risk, * investment * need to be cautious (yuan)",
+  "borrow-or-lend-money-risk-invest-there": "There is. Risk [investment] in borrowing",
+  "need": "need",
+  "caution": "Caution]",
+  "borrow-or-lend-money-risks-invest-prudent-2": "(there are risks in borrowing and 100 investment should be cautious)",
+  "borrow-or-lend-money-risk-invest-prudent": "Caution in lending / risk (investment)",
+  "borrow-or-lend-money-risk-invest-prudent-1": "Loan / risk = 3 (investment) need to be cautious",
+  "earth-?-2018-huanyu": "? 2018 Huanyu Xinlian Liaoning ICP preparation",
+  "8003078---1": "8003078 - 1",
+  "a-major-city-in-liaoning-corporation-dalian-private": "Dalian private loan service Co., Ltd"
 }
