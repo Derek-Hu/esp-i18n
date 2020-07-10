@@ -221,7 +221,7 @@ module.exports = async (translate, filepath, content) => {
                     return;
                 }
                 const transformedWord = currentWord.split('').map(function (k) {
-                    if(/[.?/\\]/.test(k)){
+                    if(/[.?()[\]*+={}/\\]/.test(k)){
                         return '\\' + k 
                     }
                     return k;
