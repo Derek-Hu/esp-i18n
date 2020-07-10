@@ -80,7 +80,7 @@ const parseVueData = (source, i18n) => {
                         start: properties[properties.length - 1].start,
                         end: properties[properties.length - 1].end,
                         isInsert: true,
-                        getReplacement: () => `,data(){\nreturn {\n ${IDName}: ${JSON.stringify(i18n, null, 2)}\n}\n}`
+                        getReplacement: () => `,\n\tdata(){\n\t\treturn {\n\t\t\t${IDName}: ${JSON.stringify(i18n, null, 2)}\n\t\t}\n\t}`
                     });
                     return;
                 }
@@ -112,7 +112,7 @@ const parseVueData = (source, i18n) => {
                         start: returnStatment.argument.start,
                         end: returnStatment.argument.end,
                         isInsert: false,
-                        getReplacement: () => `{\n${IDName}: ${JSON.stringify(i18n, null, 2)}\n}`
+                        getReplacement: () => `{\n\t\t\t${IDName}: ${JSON.stringify(i18n, null, 2)}\n\t\t\t}`
                     });
                     return;
                 }
@@ -122,7 +122,7 @@ const parseVueData = (source, i18n) => {
                         start: returnStatment.argument.properties[0].start,
                         end: returnStatment.argument.properties[0].end,
                         isInsert: true,
-                        getReplacement: () => `\n,${IDName}: ${JSON.stringify(i18n, null, 2)}`
+                        getReplacement: () => `,\n\t\t\t${IDName}: ${JSON.stringify(i18n, null, 2)}`
                     });
                     return;
                 }
