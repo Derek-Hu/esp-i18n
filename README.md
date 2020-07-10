@@ -2,7 +2,9 @@
 
 使用Babel进行语法分析，并使用百度翻译自动生成国际化id属性；
 
-支持ES6、TS等语法，支持React、Angular、Vue(支持`<script>`内部)等JS代码。
+支持ES6、TS等语法，支持React、Angular、Vue等JS代码。
+
+由于Vue使用正则表达式匹配<template>里的中文，可能存在处理错误的情况，请二次检查确认结果
 
 Example: https://github.com/Derek-Hu/esp-i18n/tree/master/examples/i18n-extract
 
