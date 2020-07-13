@@ -16,7 +16,7 @@ const cammelCase = (id) => {
             total.push(part);
             return total;
         }
-        if(part === ''){
+        if (part === '') {
             return total;
         }
         total.push(part[0].toUpperCase() + part.substring(1));
@@ -72,9 +72,25 @@ const parseVueData = (source, i18n) => {
                     });
                     return;
                 }
-                const dataMethod = properties.find(prop => {
+                let isArrowDirect = false;
+                let body;
+                let dataMethod = properties.find(prop => {
                     return prop.type === 'ObjectMethod' && prop.key && prop.key.type === 'Identifier' && prop.key.name === 'data';
                 });
+                if(dataMethod){
+                    body = dataMethod.body ? dataMethod.body.body : null;
+                }else {
+                    dataMethod = properties.find(prop => {
+                        return prop.type === 'ObjectProperty' && prop.key && prop.key.type === 'Identifier' && prop.key.name === 'data' && prop.value.type === 'ArrowFunctionExpression';
+                    });
+                    if (dataMethod) {
+                        isArrowDirect = true;
+                        if (dataMethod.value.body.type === 'BlockStatement') {
+                            body = dataMethod.value.body.body;
+                        }else if(dataMethod.value.body.type === 'ObjectExpression'){
+                        }
+                    }
+                }
                 if (!dataMethod) {
                     actions.push({
                         start: properties[properties.length - 1].start,
@@ -84,43 +100,46 @@ const parseVueData = (source, i18n) => {
                     });
                     return;
                 }
-                const body = dataMethod.body ? dataMethod.body.body : null;
-                if (!body || !body.length) {
-                    actions.push({
-                        start: dataMethod.body.start,
-                        end: dataMethod.body.end,
-                        isInsert: false,
-                        getReplacement: () => `{\nreturn {\n ${IDName}: ${JSON.stringify(i18n, null, 2)}\n}\n}`
-                    });
+                let returnStatment;
+                if(!isArrowDirect){
+                    if (!body || !body.length) {
+                        actions.push({
+                            start: dataMethod.body ? dataMethod.body.start : dataMethod.start,
+                            end: dataMethod.body ? dataMethod.body.end : dataMethod.start,
+                            isInsert: false,
+                            getReplacement: () => `{\nreturn {\n ${IDName}: ${JSON.stringify(i18n, null, 2)}\n}\n}`
+                        });
+                        return;
+                    }
+                    returnStatment = body.find(statement => statement.type === 'ReturnStatement');
+                    if (!returnStatment) {
+                        actions.push({
+                            start: body[body.length - 1].start,
+                            end: body[body.length - 1].end,
+                            isInsert: true,
+                            getReplacement: () => `\treturn {\n\t\t ${IDName}: ${JSON.stringify(i18n, null, 2)}\n\t\t}`
+                        });
+                        return;
+                    }
+                }
+                const objectExpression = isArrowDirect ? dataMethod.value.body : returnStatment.argument;
+                if (objectExpression.type !== 'ObjectExpression') {
                     return;
                 }
-                const returnStatment = body.find(statement => statement.type === 'ReturnStatement');
-                if (!returnStatment) {
+                if (!objectExpression.properties || !objectExpression.properties.length) {
                     actions.push({
-                        start: body[body.length - 1].start,
-                        end: body[body.length - 1].end,
-                        isInsert: true,
-                        getReplacement: () => `\treturn {\n\t\t ${IDName}: ${JSON.stringify(i18n, null, 2)}\n\t\t}`
-                    });
-                    return;
-                }
-                if (returnStatment.argument.type !== 'ObjectExpression') {
-                    return;
-                }
-                if (!returnStatment.argument.properties || !returnStatment.argument.properties.length) {
-                    actions.push({
-                        start: returnStatment.argument.start,
-                        end: returnStatment.argument.end,
+                        start: objectExpression.start,
+                        end: objectExpression.end,
                         isInsert: false,
                         getReplacement: () => `{\n\t\t\t${IDName}: ${JSON.stringify(i18n, null, 2)}\n\t\t\t}`
                     });
                     return;
                 }
-                const hasLabels = returnStatment.argument.properties.find(p => p.type === 'ObjectProperty' && p.key.name === IDName);
+                const hasLabels = objectExpression.properties.find(p => p.type === 'ObjectProperty' && p.key.name === IDName);
                 if (!hasLabels) {
                     actions.push({
-                        start: returnStatment.argument.properties[0].start,
-                        end: returnStatment.argument.properties[0].end,
+                        start: objectExpression.properties[0].start,
+                        end: objectExpression.properties[0].end,
                         isInsert: true,
                         getReplacement: () => `,\n\t\t\t${IDName}: ${JSON.stringify(i18n, null, 2)}`
                     });
@@ -217,12 +236,12 @@ module.exports = async (translate, filepath, content) => {
             await asyncForEach(lineWords, async matchWordInfo => {
                 const currentWord = matchWordInfo.trim();
                 const vid = cammelCase(await translate(currentWord));
-                if(Utils.isIdEmpty(vid)){
+                if (Utils.isIdEmpty(vid)) {
                     return;
                 }
                 const transformedWord = currentWord.split('').map(function (k) {
-                    if(/[.?()[\]*+={}/\\]/.test(k)){
-                        return '\\' + k 
+                    if (/[.?()[\]*+={}/\\]/.test(k)) {
+                        return '\\' + k
                     }
                     return k;
                 }).join('');

@@ -11,7 +11,10 @@ module.exports = (source, babelConfig, { localToolsPath, jsFunc }) => {
     const astTree = babelParser.parse(source, babelConfig);
     traverse(astTree, {
         StringLiteral(_node) {
-            if (['ImportDeclaration', 'JSXAttribute', 'JSXText', 'ObjectProperty'].includes(_node.parent.type)) {
+            if (['ImportDeclaration', 'JSXAttribute', 'JSXText'].includes(_node.parent.type)) {
+                return;
+            }
+            if(_node.parent.type === 'ObjectProperty' && _node.parent.key === _node.node){ // Equal ObjectProperty
                 return;
             }
             const node = _node.node;
@@ -77,7 +80,6 @@ module.exports = (source, babelConfig, { localToolsPath, jsFunc }) => {
             if (!Utils.isChineaseText(value)) {
                 return;
             }
-            console.log('value-------------', value);
             const call = {
                 start: node.key.start,
                 end: node.key.end,

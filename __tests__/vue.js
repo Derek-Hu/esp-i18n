@@ -42,25 +42,37 @@ const getOriginalKeys = (source) => {
             if (declaration.type === 'ObjectExpression') {
                 const properties = declaration.properties;
                 if (properties) {
-                    const dataMethod = properties.find(prop => {
+                    let dataMethod = properties.find(prop => {
                         return prop.type === 'ObjectMethod' && prop.key && prop.key.type === 'Identifier' && prop.key.name === 'data';
                     });
+                    if (!dataMethod) {
+                        dataMethod = properties.find(prop => {
+                            return prop.type === 'ObjectProperty' && prop.key && prop.key.type === 'Identifier' && prop.key.name === 'data' && prop.value.type === 'ArrowFunctionExpression';
+                        });
+                    }
                     hasDataMethod = !!dataMethod;
 
-                    if (dataMethod && dataMethod.body) {
-                        const body = dataMethod.body.body;
-                        const returnStatment = body.find(statement => statement.type === 'ReturnStatement');
-                        if (returnStatment && returnStatment.argument.type === 'ObjectExpression') {
-                            const hasLabels = returnStatment.argument.properties.find(p => p.type === 'ObjectProperty' && p.key.name === IDName);
-                            if (hasLabels) {
-                                hasLabelKey = true;
-                                if (hasLabels.value.type === 'ObjectExpression') {
-                                    labelKeyLength = hasLabels.value.properties.length;
-                                }
-                            }
-                        }
-                    }
+                    // if (dataMethod && dataMethod.body) {
+                    //     const body = dataMethod.body.body;
+                    //     const returnStatment = body.find(statement => statement.type === 'ReturnStatement');
+                    //     if (returnStatment && returnStatment.argument.type === 'ObjectExpression') {
+                    //         const hasLabels = returnStatment.argument.properties.find(p => p.type === 'ObjectProperty' && p.key.name === IDName);
+                    //         if (hasLabels) {
+                    //             hasLabelKey = true;
+                    //             if (hasLabels.value.type === 'ObjectExpression') {
+                    //                 labelKeyLength = hasLabels.value.properties.length;
+                    //             }
+                    //         }
+                    //     }
+                    // }
                 }
+            }
+        },
+        ObjectProperty(_node) {
+            const node = _node.node;
+            if (node.key.name === IDName) {
+                hasLabelKey = true;
+                labelKeyLength = node.value.properties.length;
             }
         }
     });
@@ -198,6 +210,34 @@ describe('解析百度翻译页面结果', () => {
 
     it('当export对象包含多个属性，但不包含data方法时，自动增加Labels属性', async () => {
         expectLabelKeyLength('data-no-data.vue');
+    });
+
+    it('data箭头函数', async () => {
+        expectLabelKeyLength('data-arrow/data-empty.vue');
+    });
+
+    it('data箭头函数 未使用return', async () => {
+        expectLabelKeyLength('data-arrow/data-no-return.vue');
+    });
+
+    it('data箭头函数 直接return', async () => {
+        expectLabelKeyLength('data-arrow/data-return-direct.vue');
+    });
+
+    it('data箭头函数 直接return包括Labels', async () => {
+        expectLabelKeyLength('data-arrow/data-return-direct-other.vue');
+    });
+
+    it('data箭头函数 return其他函数', async () => {
+        expectLabelKeyLength('data-arrow/data-return-one.vue');
+    });
+
+    it('data箭头函数 return包括Labels', async () => {
+        expectLabelKeyLength('data-arrow/data-return-with-already-one.vue');
+    });
+
+    it('data箭头函数', async () => {
+        expectLabelKeyLength('data-arrow/data-empty-redirect.vue');
     });
 
 });
