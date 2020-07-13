@@ -43,5 +43,8 @@ export default {
   "copy-succeeded": "คัดลอกสำเร็จ",
   "upload-invoice": "อัพโหลดใบแจ้งหนี้",
   "please-select-the-receiver": "กรุณาเลือกผู้รับ",
-  "borrow-or-lend-money-risks-prudent-there": "มีความเสี่ยงในการกู้ยืมเงินและการลงทุนอย่างระมัดระวัง"
+  "borrow-or-lend-money-risks-prudent-there": "มีความเสี่ยงในการกู้ยืมเงินและการลงทุนอย่างระมัดระวัง",
+  "holding": "ครอบครอง",
+  "to-be-confirmed": "ยืนยัน",
+  "to-be-received": "รอที่จะได้รับ"
 }

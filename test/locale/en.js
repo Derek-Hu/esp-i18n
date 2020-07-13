@@ -177,5 +177,8 @@ export default {
   "copy-succeeded": "Copy succeeded",
   "upload-invoice": "Upload invoice",
   "please-select-the-receiver": "Please select the receiver",
-  "borrow-or-lend-money-risks-prudent-there": "There are risks in borrowing and investment should be cautious"
+  "borrow-or-lend-money-risks-prudent-there": "There are risks in borrowing and investment should be cautious",
+  "holding": "Holding（",
+  "to-be-confirmed": "To be confirmed（",
+  "to-be-received": "To be received（"
 }

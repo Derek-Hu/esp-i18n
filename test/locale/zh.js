@@ -177,5 +177,8 @@ export default {
   "copy-succeeded": "复制成功",
   "upload-invoice": "上传发票",
   "please-select-the-receiver": "请选择接收方",
-  "borrow-or-lend-money-risks-prudent-there": "借贷有风险，投资需谨慎"
+  "borrow-or-lend-money-risks-prudent-there": "借贷有风险，投资需谨慎",
+  "holding": "持有中(",
+  "to-be-confirmed": "待确认(",
+  "to-be-received": "待接收("
 }
