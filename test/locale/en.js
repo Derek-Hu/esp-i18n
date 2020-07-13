@@ -180,5 +180,7 @@ export default {
   "borrow-or-lend-money-risks-prudent-there": "There are risks in borrowing and investment should be cautious",
   "holding": "Holding（",
   "to-be-confirmed": "To be confirmed（",
-  "to-be-received": "To be received（"
+  "to-be-received": "To be received（",
+  "chinese-2": "Chinese 2",
+  "chinese": "chinese"
 }

@@ -180,5 +180,7 @@ export default {
   "borrow-or-lend-money-risks-prudent-there": "借贷有风险，投资需谨慎",
   "holding": "持有中(",
   "to-be-confirmed": "待确认(",
-  "to-be-received": "待接收("
+  "to-be-received": "待接收(",
+  "chinese-2": "中文2",
+  "chinese": "中文"
 }

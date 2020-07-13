@@ -46,5 +46,7 @@ export default {
   "borrow-or-lend-money-risks-prudent-there": "มีความเสี่ยงในการกู้ยืมเงินและการลงทุนอย่างระมัดระวัง",
   "holding": "ครอบครอง",
   "to-be-confirmed": "ยืนยัน",
-  "to-be-received": "รอที่จะได้รับ"
+  "to-be-received": "รอที่จะได้รับ",
+  "chinese-2": "ภาษาจีน",
+  "chinese": "ภาษาจีน"
 }

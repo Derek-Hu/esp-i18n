@@ -11,7 +11,7 @@ module.exports = (source, babelConfig, { localToolsPath, jsFunc }) => {
     const astTree = babelParser.parse(source, babelConfig);
     traverse(astTree, {
         StringLiteral(_node) {
-            if (['ImportDeclaration', 'JSXAttribute', 'JSXText'].includes(_node.parent.type)) {
+            if (['ImportDeclaration', 'JSXAttribute', 'JSXText', 'ObjectProperty'].includes(_node.parent.type)) {
                 return;
             }
             const node = _node.node;
@@ -66,6 +66,25 @@ module.exports = (source, babelConfig, { localToolsPath, jsFunc }) => {
                 });
             }
             importedAttrs.push(imported);
+        },
+        ObjectProperty(_node){
+            const node = _node.node;
+            if(!node.key){
+                return;
+            }
+            const type = node.key.type;
+            const value = type === 'StringLiteral'? node.key.value : node.key.name;
+            if (!Utils.isChineaseText(value)) {
+                return;
+            }
+            console.log('value-------------', value);
+            const call = {
+                start: node.key.start,
+                end: node.key.end,
+                value: value,
+                getReplacement: (id, funcName) => `[${funcName}({id: '${id}'})]`
+            }
+            entries.push(call);
         },
         JSXAttribute(_node) {
             const node = _node.node;
