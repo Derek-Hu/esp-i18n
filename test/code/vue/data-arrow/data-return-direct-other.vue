@@ -10,9 +10,6 @@ export default {
   data: () => ({
     Labels: {
       aaa: '200',
-      Labels: {
-        bbb: '100'
-      }
     }
   }),
   methods: {

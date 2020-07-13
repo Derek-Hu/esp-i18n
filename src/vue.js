@@ -74,20 +74,24 @@ const parseVueData = (source, i18n) => {
                 }
                 let isArrowDirect = false;
                 let body;
+                let bodyParent;
                 let dataMethod = properties.find(prop => {
                     return prop.type === 'ObjectMethod' && prop.key && prop.key.type === 'Identifier' && prop.key.name === 'data';
                 });
                 if(dataMethod){
                     body = dataMethod.body ? dataMethod.body.body : null;
+                    bodyParent = dataMethod.body;
                 }else {
                     dataMethod = properties.find(prop => {
                         return prop.type === 'ObjectProperty' && prop.key && prop.key.type === 'Identifier' && prop.key.name === 'data' && prop.value.type === 'ArrowFunctionExpression';
                     });
                     if (dataMethod) {
-                        isArrowDirect = true;
+                        debugger;
                         if (dataMethod.value.body.type === 'BlockStatement') {
                             body = dataMethod.value.body.body;
+                            bodyParent = dataMethod.value.body;
                         }else if(dataMethod.value.body.type === 'ObjectExpression'){
+                            isArrowDirect = true;
                         }
                     }
                 }
@@ -104,8 +108,8 @@ const parseVueData = (source, i18n) => {
                 if(!isArrowDirect){
                     if (!body || !body.length) {
                         actions.push({
-                            start: dataMethod.body ? dataMethod.body.start : dataMethod.start,
-                            end: dataMethod.body ? dataMethod.body.end : dataMethod.start,
+                            start: bodyParent.start,
+                            end: bodyParent.end,
                             isInsert: false,
                             getReplacement: () => `{\nreturn {\n ${IDName}: ${JSON.stringify(i18n, null, 2)}\n}\n}`
                         });
@@ -117,7 +121,7 @@ const parseVueData = (source, i18n) => {
                             start: body[body.length - 1].start,
                             end: body[body.length - 1].end,
                             isInsert: true,
-                            getReplacement: () => `\treturn {\n\t\t ${IDName}: ${JSON.stringify(i18n, null, 2)}\n\t\t}`
+                            getReplacement: () => `\n\treturn {\n\t\t ${IDName}: ${JSON.stringify(i18n, null, 2)}\n\t\t}`
                         });
                         return;
                     }

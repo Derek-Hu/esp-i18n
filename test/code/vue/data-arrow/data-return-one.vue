@@ -10,7 +10,8 @@ export default {
   data: () => {
     console.log();
     return {
-      aaa: '100'
+      aaa: '100',
+      Labels: {},
     };
   },
   methods: {
