@@ -4,7 +4,7 @@
 
 支持ES6、TS等语法，支持React、Angular、Vue等JS代码。
 
-由于Vue使用正则表达式匹配<template>里的中文，可能存在处理错误的情况，请二次检查确认结果
+由于Vue使用正则表达式匹配`<template>`里的中文，可能存在处理错误的情况，请二次检查确认结果
 
 Example: https://github.com/Derek-Hu/esp-i18n/tree/master/examples/i18n-extract
 
@@ -42,6 +42,7 @@ i18n({
     //srcCopyFolder: 'dist',
 })
 ```
+
 支持中文翻译的语言列表见：[https://github.com/Derek-Hu/esp-i18n/blob/master/src/languages.js](https://github.com/Derek-Hu/esp-i18n/blob/master/src/languages.js)
 
 源代码: 
@@ -77,4 +78,16 @@ export default class ErrorPage403 extends React.Component {
     </ErrorPage>;
   }
 }
+```
+
+### 开发体验
+查看国际化运行效果，将`test`文件源代码进行国际化，直接覆盖`test`文件夹
+```sh
+npm run i18n
+```
+
+### 单元测试
+单元测试运行生成源代码至`dist`文件夹，并生成测试覆盖率报告至文件夹`converage`
+```sh
+npm test
 ```
