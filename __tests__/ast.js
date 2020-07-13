@@ -158,11 +158,14 @@ describe('解析百度翻译页面结果', () => {
         const enSize = Object.keys(en).length;
         const thSize = Object.keys(th).length;
 
-        expect(zhSize === enSize).toBe(true);
-        expect(zhSize === thSize).toBe(true);
+        expect(zhSize <= enSize).toBe(true);
+        expect(zhSize <= thSize).toBe(true);
 
-        expect(Object.keys(en).every(enKey => enKey in zh)).toBe(true);
-        expect(Object.keys(th).every(thKey => thKey in zh)).toBe(true);
+        expect(Object.keys(zh).forEach(zhKey => {
+            console.log(zhKey);
+            expect(zhKey in en).toBe(true);
+            expect(zhKey in th).toBe(true);
+        }));
     });
 
 });
