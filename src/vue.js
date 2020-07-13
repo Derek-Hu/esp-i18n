@@ -139,7 +139,7 @@ const parseVueData = (source, i18n) => {
                         start: hasLabels.value.properties[0].start,
                         end: hasLabels.value.properties[0].end,
                         isInsert: true,
-                        getReplacement: () => `,${Object.keys(i18n).map(key => `${key}:\`${i18n[key]}\``).join(',\n')}`
+                        getReplacement: () => `,\n${Object.keys(i18n).map(key => `${key}:\`${i18n[key]}\``).join(',\n')}`
                     });
                 }
             }
@@ -226,7 +226,7 @@ module.exports = async (translate, filepath, content) => {
                     }
                     return k;
                 }).join('');
-                let reg = new RegExp('(\\w+=)"' + transformedWord + '"');
+                let reg = new RegExp('(\\w+\\s*=\\s*)(["\'])' + transformedWord + '\\2');
                 let attrMatch = line.match(reg);
                 if (attrMatch && attrMatch[0]) {
                     line = line.replace(attrMatch[0], `:${attrMatch[1]}"${getterExpression(vid)}"`);

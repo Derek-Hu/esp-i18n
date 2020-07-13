@@ -33,7 +33,13 @@ module.exports = function (translatedId) {
 
     if (translationParts.length && (translationParts.length <= maxWords)) {
         return {
-            id: translationParts.join('-'),
+            id: translationParts.reduce((means, word) => {
+                const after = word.replace(/[^_a-zA-Z\d]/g, '');
+                if(after!==''){
+                    means.push(after);
+                }
+                return means;
+            }, []).join('-'),
             translation: translation
         };
     }
@@ -43,7 +49,10 @@ module.exports = function (translatedId) {
             if (index >= maxWords) {
                 return means;
             }
-            means.push(word);
+            const after = word.replace(/[^_a-zA-Z\d]/g, '');
+            if(after!==''){
+                means.push(after);
+            }
             return means;
         }, []).join('-'),
         translation: translation
