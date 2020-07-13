@@ -55,7 +55,13 @@ module.exports = (options) => {
         }
         value = value.trim();
         if (chinaValueKeyMapping[value] !== undefined) {
-            return chinaValueKeyMapping[value];
+            const cacheId = chinaValueKeyMapping[value];
+            await asyncForEach(translateLanguages, async code => {
+                if (code !== 'zh' && !(cacheId in TranslationContainer[code])) {
+                    await remoteTranslate(value, code, cacheId);
+                }
+            });
+            return cacheId;
         } else {
             const id = await remoteTranslate(value, 'en', null);
             if (Utils.isIdEmpty(id)) {
@@ -76,5 +82,5 @@ module.exports = (options) => {
         return TranslationContainer;
     };
     return translate;
-    
+
 }

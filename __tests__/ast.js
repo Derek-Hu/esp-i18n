@@ -4,7 +4,10 @@ import i18n from '~/main';
 import parseParam from '~/param';
 
 const toolPath = '~/locale-tools';
-
+const encode = 'UTF8';
+const parseLocalJson = (source) => {
+    return JSON.parse(source.replace('export default ', ''));
+}
 jest.setTimeout(30000);
 
 describe('解析百度翻译页面结果', () => {
@@ -13,6 +16,7 @@ describe('解析百度翻译页面结果', () => {
         folders: ['test'],
         excludes: ['test/code/vue', 'test/code/placeholder', 'test/intl.js'],
         localTools: toolPath,
+        translate: ['th'],
         target: 'test/locale',
         srcCopyFolder: 'dist',
     };
@@ -27,6 +31,12 @@ describe('解析百度翻译页面结果', () => {
     it('支持 import {formatMessage as fm} from --> fm({id})', async () => {
         const code = fs.readFileSync(path.resolve(baseFolder, 'test/code/ast', 'import-already.js'), 'UTF8');
         const isExists = code.indexOf('fm(') !== -1;
+        expect(isExists).toBe(true);
+    });
+
+    it('对象属性动态化[fm]', async () => {
+        const code = fs.readFileSync(path.resolve(baseFolder, 'test/code/ast', 'import-already.js'), 'UTF8');
+        const isExists = code.indexOf(`[fm({id: 'chinese'})]:`) !== -1;
         expect(isExists).toBe(true);
     });
 
@@ -124,6 +134,7 @@ describe('解析百度翻译页面结果', () => {
     const remoteParams = {
         folders: ['test/code/remote'],
         localTools: toolPath,
+        translate: ['th'],
         target: 'dist/abc/locale2',
         srcCopyFolder: 'dist',
     };
@@ -136,6 +147,22 @@ describe('解析百度翻译页面结果', () => {
         const enExists = fs.existsSync(path.resolve(parsedRemote.target, 'en.js'));
         expect(zhExists).toBe(true);
         expect(enExists).toBe(true);
+    });
+
+    it('各语言Key不少于中文Key', async () => {
+        const zh = parseLocalJson(fs.readFileSync(path.resolve(parsed.target, 'zh.js'), encode));
+        const en = parseLocalJson(fs.readFileSync(path.resolve(parsed.target, 'en.js'), encode));
+        const th = parseLocalJson(fs.readFileSync(path.resolve(parsed.target, 'th.js'), encode));
+
+        const zhSize = Object.keys(zh).length;
+        const enSize = Object.keys(en).length;
+        const thSize = Object.keys(th).length;
+
+        expect(zhSize === enSize).toBe(true);
+        expect(zhSize === thSize).toBe(true);
+
+        expect(Object.keys(en).every(enKey => enKey in zh)).toBe(true);
+        expect(Object.keys(th).every(thKey => thKey in zh)).toBe(true);
     });
 
 });

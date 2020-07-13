@@ -99,6 +99,7 @@ describe('解析百度翻译页面结果', () => {
         folders: [filePath],
         localTools: toolPath,
         target: 'test/locale',
+        translate: ['th'],
         srcCopyFolder: 'dist',
     };
 

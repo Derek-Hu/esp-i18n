@@ -182,5 +182,8 @@ export default {
   "to-be-confirmed": "To be confirmed（",
   "to-be-received": "To be received（",
   "chinese-2": "Chinese 2",
-  "chinese": "chinese"
+  "chinese": "chinese",
+  "earth-2018-huanyu": "? 2018 Huanyu Xinlian Liaoning ICP preparation",
+  "to-be-submitted": "To be submitted（",
+  "to-be-improved": "To be improved（"
 }
