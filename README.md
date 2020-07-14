@@ -80,14 +80,15 @@ export default class ErrorPage403 extends React.Component {
 }
 ```
 
-### 开发体验
-查看国际化运行效果，将`test`文件源代码进行国际化，直接覆盖`test`文件夹
-```sh
-npm run i18n
-```
 
 ### 单元测试
 单元测试运行生成源代码至`dist`文件夹，并生成测试覆盖率报告至文件夹`converage`
 ```sh
 npm test
+```
+
+### 开发体验
+查看国际化运行效果，将`test`文件源代码进行国际化，直接覆盖`test`文件夹
+```sh
+npm run i18n
 ```

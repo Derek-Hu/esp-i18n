@@ -31,10 +31,11 @@ module.exports = function (translatedId) {
         return '';
     }).map(formatWord).filter(v => v) : [];
 
+    const filterExp = /[^-_a-zA-Z\d]/g;
     if (translationParts.length && (translationParts.length <= maxWords)) {
         return {
             id: translationParts.reduce((means, word) => {
-                const after = word.replace(/[^_a-zA-Z\d]/g, '');
+                const after = word.replace(filterExp, '');
                 if(after!==''){
                     means.push(after);
                 }
@@ -49,7 +50,7 @@ module.exports = function (translatedId) {
             if (index >= maxWords) {
                 return means;
             }
-            const after = word.replace(/[^_a-zA-Z\d]/g, '');
+            const after = word.replace(filterExp, '');
             if(after!==''){
                 means.push(after);
             }

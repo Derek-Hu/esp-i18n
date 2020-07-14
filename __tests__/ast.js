@@ -149,7 +149,7 @@ describe('解析百度翻译页面结果', () => {
         expect(enExists).toBe(true);
     });
 
-    it('各语言Key不少于中文Key', async () => {
+    it('各语言Key相同', async () => {
         const zh = parseLocalJson(fs.readFileSync(path.resolve(parsed.target, 'zh.js'), encode));
         const en = parseLocalJson(fs.readFileSync(path.resolve(parsed.target, 'en.js'), encode));
         const th = parseLocalJson(fs.readFileSync(path.resolve(parsed.target, 'th.js'), encode));
@@ -158,14 +158,12 @@ describe('解析百度翻译页面结果', () => {
         const enSize = Object.keys(en).length;
         const thSize = Object.keys(th).length;
 
-        expect(zhSize <= enSize).toBe(true);
-        expect(zhSize <= thSize).toBe(true);
+        expect(zhSize === enSize).toBe(true);
+        expect(zhSize === thSize).toBe(true);
 
-        expect(Object.keys(zh).forEach(zhKey => {
-            console.log(zhKey);
-            expect(zhKey in en).toBe(true);
-            expect(zhKey in th).toBe(true);
-        }));
+        expect(Object.keys(zh).every(zhKey => {
+            return ((zhKey in en) && (zhKey in th));
+        })).toBe(true);
     });
 
 });
