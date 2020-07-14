@@ -199,5 +199,6 @@ export default {
   "check-mobilenumber-mobile-phone": "复核人手机号码(选填)",
   "import-check-mobilenumber-please": "请输入复核人手机号码",
   "power-of-attorney-optional": "授权委托书(选填)",
-  "skip-fund-tabulation-jump": "秒后跳转到资金方列表页"
+  "skip-fund-tabulation-jump": "秒后跳转到资金方列表页",
+  "submit-now": "立即提交"
 }

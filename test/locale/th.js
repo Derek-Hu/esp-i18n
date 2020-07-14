@@ -199,5 +199,6 @@ export default {
   "check-mobilenumber-mobile-phone": "ตรวจสอบหมายเลขโทรศัพท์มือถือของผู้ตรวจสอบ",
   "power-of-attorney-optional": "หนังสือมอบอำนาจที่เลือก",
   "submit-now": "ส่งทันที",
-  "skip-fund-tabulation-jump": "วินาทีต่อมากระโดดไปยังหน้ารายชื่อพรรคทุน"
+  "skip-fund-tabulation-jump": "วินาทีต่อมากระโดดไปยังหน้ารายชื่อพรรคทุน",
+  "import-check-mobilenumber-please": "กรุณาป้อนหมายเลขโทรศัพท์มือถือของผู้ตรวจสอบ"
 }

@@ -199,5 +199,6 @@ export default {
   "check-mobilenumber-mobile-phone": "Mobile phone number of reviewer (optional)",
   "import-check-mobilenumber-please": "Please enter the mobile phone number of the reviewer",
   "submit-now": "Submit now",
-  "skip-fund-tabulation-jump": "Jump to the fund side list page in seconds"
+  "skip-fund-tabulation-jump": "Jump to the fund side list page in seconds",
+  "power-of-attorney-optional": "Power of attorney (optional)"
 }
