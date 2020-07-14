@@ -45,17 +45,19 @@ module.exports = (options) => {
         const { launchOptions, translateLanguages } = options;
 
         launchParams = launchOptions;
-
+        
         if (!TranslationContainer) {
             TranslationContainer = Utils.loadLocales(translateLanguages, options.target);
-
+            
             chinaValueKeyMapping = updateChinaMapping(TranslationContainer);
-
+            
             debugger;
             // 同步各Locale文件Id
             // 1. 先各文件同步给中文zh.js
             // 2. 然后zh.js同步给各locale
-            await asyncForEach(translateLanguages, async code => {
+            const sortted = translateLanguages.sort((a) => { if (a === 'en') { return -1 } return 1 });
+
+            await asyncForEach(sortted, async code => {
                 if (code === 'zh') {
                     return;
                 }

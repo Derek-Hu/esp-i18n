@@ -198,7 +198,6 @@ export default {
   "check-postbox-email-address": "Email address of reviewer (optional)",
   "check-mobilenumber-mobile-phone": "Mobile phone number of reviewer (optional)",
   "import-check-mobilenumber-please": "Please enter the mobile phone number of the reviewer",
-  "power-of-attorney-optional": "Power of attorney (optional)",
   "submit-now": "Submit now",
   "skip-fund-tabulation-jump": "Jump to the fund side list page in seconds"
 }

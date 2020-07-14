@@ -197,7 +197,6 @@ export default {
   "check-id-id-card": "หมายเลขบัตรประชาชนของผู้สอบบัญชี",
   "check-postbox-email-address": "กล่องจดหมายของผู้สอบบัญชี",
   "check-mobilenumber-mobile-phone": "ตรวจสอบหมายเลขโทรศัพท์มือถือของผู้ตรวจสอบ",
-  "import-check-mobilenumber-please": "กรุณาป้อนหมายเลขโทรศัพท์มือถือของผู้ตรวจสอบ",
   "power-of-attorney-optional": "หนังสือมอบอำนาจที่เลือก",
   "submit-now": "ส่งทันที",
   "skip-fund-tabulation-jump": "วินาทีต่อมากระโดดไปยังหน้ารายชื่อพรรคทุน"
