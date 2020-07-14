@@ -7,7 +7,6 @@ export default {
   "to-be-submitted（": "To be submitted（",
   "to-be-improved（": "To be improved（",
   "batch-found-batch-creation": "Batch creation of AP succeeded!",
-  "": "托贝姆证明(",
   "tobesubmitted（": "toBeSubmitted（",
   "binding-succeeded": "Binding succeeded",
   "successful-supply-chain-binding": "Successful supply chain binding",

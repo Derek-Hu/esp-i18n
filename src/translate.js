@@ -6,10 +6,17 @@ const LanguageMapping = require('./languages');
 const { asyncForEach } = Utils;
 const waitOptions = { waitUntil: 'networkidle0' };
 
+const updateChinaMapping = (container) => {
+    const zhKeys = Object.keys(container['zh']);
+    return zhKeys.reduce((all, chinaId) => {
+        all[container['zh'][chinaId]] = chinaId;
+        return all;
+    }, {});
+}
 module.exports = (options) => {
 
     let TranslationContainer;
-    let chinaValueKeyMapping;
+    let chinaValueKeyMapping = {};
     let duplicateKeys = {};
     let launchParams;
 
@@ -42,27 +49,31 @@ module.exports = (options) => {
         if (!TranslationContainer) {
             TranslationContainer = Utils.loadLocales(translateLanguages, options.target);
 
+            chinaValueKeyMapping = updateChinaMapping(TranslationContainer);
+
             debugger;
             // 同步各Locale文件Id
             // 1. 先各文件同步给中文zh.js
             // 2. 然后zh.js同步给各locale
             await asyncForEach(translateLanguages, async code => {
-                if(code === 'zh'){
+                if (code === 'zh') {
                     return;
                 }
                 const codeKeys = Object.keys(TranslationContainer[code]);
-                
+
                 await asyncForEach(codeKeys, async codeKey => {
                     if (!(codeKey in TranslationContainer['zh'])) {
                         await remoteTranslate(TranslationContainer[code][codeKey], 'zh', codeKey, code);
                     }
                 });
             });
-            
+
+            chinaValueKeyMapping = updateChinaMapping(TranslationContainer);
+
             const zhKeys = Object.keys(TranslationContainer['zh']);
 
             await asyncForEach(translateLanguages, async code => {
-                if(code === 'zh'){
+                if (code === 'zh') {
                     return;
                 }
                 await asyncForEach(zhKeys, async zhKey => {
@@ -71,11 +82,6 @@ module.exports = (options) => {
                     }
                 });
             });
-
-            chinaValueKeyMapping = zhKeys.reduce((all, chinaId) => {
-                all[TranslationContainer['zh'][chinaId]] = chinaId;
-                return all;
-            }, {});
 
             duplicateKeys = {};
 
