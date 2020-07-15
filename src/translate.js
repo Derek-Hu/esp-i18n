@@ -28,7 +28,7 @@ module.exports = (options) => {
 
     const remoteTranslate = async function (value, language, fixedId, fromLanguage = 'zh') {
         const locales = TranslationContainer[fromLanguage];
-        const toLocales = TranslationContainer[toLanguage];
+        const toLocales = TranslationContainer[language];
 
         const trimedValue = value.trim();
 
@@ -49,12 +49,12 @@ module.exports = (options) => {
             const placeholder = '__';
             const template = value.replace(trimedValue, placeholder);
             const { id, translation } = await getTranslation(trimedValue, language, fromLanguage);
-            if (!Utils.isIdEmpty(id) && !Utils.isIdEmpty(translation)) {
+            if (!Utils.isIdEmpty(translation)) {
                 browserId = id;
                 finalTranslation = template.replace(placeholder, translation);
             }
         } else {
-            finalTranslation = idTranslationMap[selectedType].translate;
+            finalTranslation = idTranslationMap[selectedType];
         }
 
         let finalId = null;
