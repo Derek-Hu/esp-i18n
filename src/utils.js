@@ -55,7 +55,6 @@ module.exports.getUniqueId = (id, value, zhLocaleData, duplicateKeys) => {
         }
         validId = `${id}-${duplicateKeys[id]}`;
     }
-    zhLocaleData[validId] = value;
     return validId;
 }
 

@@ -113,7 +113,7 @@ module.exports = (options) => {
                     if (!(zhKey in TranslationContainer[code])) {
                         const { translation } = await remoteTranslate(TranslationContainer['zh'][zhKey], code, zhKey);
                         if (!Utils.isIdEmpty(translation)) {
-                            TranslationContainer[code][codeKey] = translation;
+                            TranslationContainer[code][zhKey] = translation;
                         }
                     }
                 });
