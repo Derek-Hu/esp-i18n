@@ -86,7 +86,6 @@ const parseVueData = (source, i18n) => {
                         return prop.type === 'ObjectProperty' && prop.key && prop.key.type === 'Identifier' && prop.key.name === 'data' && prop.value.type === 'ArrowFunctionExpression';
                     });
                     if (dataMethod) {
-                        debugger;
                         if (dataMethod.value.body.type === 'BlockStatement') {
                             body = dataMethod.value.body.body;
                             bodyParent = dataMethod.value.body;

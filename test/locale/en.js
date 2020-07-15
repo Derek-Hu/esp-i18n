@@ -201,17 +201,5 @@ export default {
   "submit-now": "Submit now",
   "skip-fund-tabulation-jump": "Jump to the fund side list page in seconds",
   "power-of-attorney-optional": "Power of attorney (optional)",
-  "well-1": "well",
-  "this-is-chinese-1": "This is Chinese",
   "business-contract-number-please-enter-1": "Please enter the trade contract number",
-  "business-contract-number-please-enter-2": "Please enter the trade contract number",
-  "interesting-1": "Interesting",
-  "business-contract-number-please-enter-3": "Please enter the trade contract number",
-  "upload-identity-card-fetch-fill-in": "Automatic reading / manual filling after uploading ID card",
-  "operator-terrace-register-will-1": "Will be used for operator enterprise platform login",
-  "import-operator-mobile-number-please": "Please input the operator's mobile phone number",
-  "import-check-mobile-number-please": "Please enter the mobile phone number of the reviewer",
-  "earth-2018-huanyu-1": "? 2018 Huanyu Xinlian Liaoning ICP preparation",
-  "flow-path-last-legal-representative-operator-1": "At the end of the process, the legal representative and the operator are required to carry out face recognition. It is recommended to inform relevant personnel in advance",
-  "submitted-successfully-1": "Submitted successfully"
 }

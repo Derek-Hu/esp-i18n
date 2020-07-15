@@ -64,7 +64,7 @@ module.exports = async (params) => {
                     source = source.slice(0, entry.start) + entry.getReplacement(null, finalFuncName) + source.slice(entry.end);
                     return;
                 }
-                const id = await translate(entry.value, options);
+                const id = await translate(entry.value);
                 const isSucess = !Utils.isIdEmpty(id);
 
                 if (isSucess) {
