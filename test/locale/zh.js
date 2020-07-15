@@ -200,5 +200,18 @@ export default {
   "import-check-mobilenumber-please": "请输入复核人手机号码",
   "power-of-attorney-optional": "授权委托书(选填)",
   "skip-fund-tabulation-jump": "秒后跳转到资金方列表页",
-  "submit-now": "立即提交"
+  "submit-now": "立即提交",
+  "well-1": "\n            好的\n        ",
+  "this-is-chinese-1": "这是中文\n        ",
+  "business-contract-number-please-enter-1": "  请输入  贸易合同编号   ",
+  "business-contract-number-please-enter-2": "  请输入贸易合同编号",
+  "interesting-1": "呵呵呵  ",
+  "business-contract-number-please-enter-3": "请输入  贸易合同编号",
+  "upload-identity-card-fetch-fill-in": " 上传身份证后自动读取/手动填写",
+  "operator-terrace-register-will-1": " 将用于经办人企业平台登录",
+  "import-operator-mobile-number-please": " 请输入经办人手机号码",
+  "import-check-mobile-number-please": " 请输入复核人手机号码",
+  "earth-2018-huanyu-1": "      ©2018 环宇信链 辽ICP备",
+  "flow-path-last-legal-representative-operator-1": "      流程最后需法定代表人及经办人进行人脸识别，建议提前通知相关人员",
+  "submitted-successfully-1": "            提交成功"
 }

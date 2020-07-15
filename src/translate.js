@@ -91,7 +91,7 @@ module.exports = (options) => {
         if (Utils.isIdEmpty(value)) {
             return value;
         }
-        value = value.trim();
+        // value = value.trim();
         if (chinaValueKeyMapping[value] !== undefined) {
             const cacheId = chinaValueKeyMapping[value];
             // await asyncForEach(translateLanguages, async code => {

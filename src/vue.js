@@ -238,12 +238,11 @@ module.exports = async (translate, filepath, content) => {
         const lineWords = extractChinease(line);
         if (lineWords && lineWords.length) {
             await asyncForEach(lineWords, async matchWordInfo => {
-                const currentWord = matchWordInfo.trim();
-                const vid = cammelCase(await translate(currentWord));
+                const vid = cammelCase(await translate(matchWordInfo));
                 if (Utils.isIdEmpty(vid)) {
                     return;
                 }
-                const transformedWord = currentWord.split('').map(function (k) {
+                const transformedWord = matchWordInfo.split('').map(function (k) {
                     if (/[.?()[\]*+={}/\\]/.test(k)) {
                         return '\\' + k
                     }
@@ -262,13 +261,12 @@ module.exports = async (translate, filepath, content) => {
                     }
                 }
 
+                let currentWord = matchWordInfo;
                 if (!attrMatch) {
+                    currentWord = matchWordInfo.trim();
                     line = line.replace(currentWord, `{{${getterExpression(vid)}}}`);
                 }
-
-                if (labels[vid] !== undefined && labels[vid] !== currentWord) {
-                    console.error('出现重复ID' + filepath + ':\n', labels[vid], currentWord);
-                }
+                
                 labels[vid] = currentWord;
             });
         }
@@ -283,7 +281,7 @@ module.exports = async (translate, filepath, content) => {
         if (isUpdated) {
             return modified;
         }
-        return `<templte>\n${IDName}: {\n` + Object.keys(labels).map(w => `${w}=${labels[w]}`).join(',\n') + '\n}\n</templte>\n' + modified;
+        return `const ${IDName} = {\n` + Object.keys(labels).map(w => `${w}=${labels[w]}`).join(',\n') + '\n};\n</templte>\n' + modified;
     }
     return content;
 }

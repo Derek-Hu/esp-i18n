@@ -6,6 +6,9 @@
   <section class="guide-wrap-section">
     <p>{{Labels.shifttoanearlierdatePrepareAsfollowsSothat}}</p>
     <span :title="Labels.invoicePhoto"></span>
+    <p>  {{Labels.businessContractNumberPleaseEnter1}}   </p>
+    <div :placeholder=" isTrue ? Labels.businessContractNumberPleaseEnter2: Labels.interesting1"></div>
+    <div :placeholder ="Labels.businessContractNumberPleaseEnter2" />
     <div :placeholder="Labels.businesscontractNumberPleaseEnter" />
     <div :placeholder="Labels.businesscontractNumberPleaseEnter" />
     <div :placeholder = "Labels.businesscontractNumberPleaseEnter" />
@@ -40,6 +43,9 @@ return {
   "80030781": formatMessage({id: '8003078-1'}),
   "shifttoanearlierdatePrepareAsfollowsSothat": formatMessage({id: 'shifttoanearlierdate-prepare-asfollows-sothat'}),
   "invoicePhoto": formatMessage({id: 'invoice-photo'}),
+  "businessContractNumberPleaseEnter1": formatMessage({id: 'business-contract-number-please-enter-3'}),
+  "businessContractNumberPleaseEnter2": formatMessage({id: 'business-contract-number-please-enter-2'}),
+  "interesting1": formatMessage({id: 'interesting-1'}),
   "businesscontractNumberPleaseEnter": formatMessage({id: 'businesscontract-number-please-enter'}),
   "interesting": formatMessage({id: 'interesting'}),
   "heheHehe2": formatMessage({id: 'hehe-hehe-2'}),
