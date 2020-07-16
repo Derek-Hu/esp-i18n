@@ -13,8 +13,8 @@ jest.setTimeout(30000);
 describe('解析百度翻译页面结果', () => {
     const pamras = {
         // 扫描目录
-        folders: ['test'],
-        excludes: ['test/code/vue', 'test/code/placeholder', 'test/intl.js'],
+        folders: ['test/code/ast', 'test/code/remote', 'test/result'],
+        // excludes: ['test/code/vue', 'test/code/placeholder', 'test/code/translate', 'test/locale-script'],
         localTools: toolPath,
         translate: ['th'],
         target: 'test/locale',

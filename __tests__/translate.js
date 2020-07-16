@@ -11,11 +11,11 @@ jest.setTimeout(30000);
 describe('正确增加ID', () => {
     const pamras = {
         // 扫描目录
-        folders: ['test/code/translate/code'],
+        folders: ['test/code/translate'],
         localTools: toolPath,
         // translate: ['th'],
-        target: 'test/code/translate/locale',
-        // srcCopyFolder: 'dist',
+        target: 'test/locale-t',
+        srcCopyFolder: 'dist',
     };
 
     const parsed = parseParam(pamras);
@@ -24,4 +24,6 @@ describe('正确增加ID', () => {
     beforeAll(async () => {
         await i18n(pamras);
     });
+
+
 });

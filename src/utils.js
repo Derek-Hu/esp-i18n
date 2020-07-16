@@ -55,6 +55,7 @@ module.exports.getUniqueId = (id, value, zhLocaleData, duplicateKeys) => {
         }
         validId = `${id}-${duplicateKeys[id]}`;
     }
+    zhLocaleData[validId] = value;
     return validId;
 }
 
@@ -91,7 +92,8 @@ const getProcessFiles = (folders, excludes) => {
         const jsFiles = getJSFileList(path.resolve(process.cwd(), folder));
         jsFiles.forEach(file => {
             const isExcludes = excludes.some(exclude => {
-                return file.indexOf(exclude) === 0;
+                const relativePath = path.relative(exclude, file);
+                return !/^\.\./.test(relativePath);
             });
             if (!isExcludes) {
                 files = files.concat(file);

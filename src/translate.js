@@ -29,6 +29,7 @@ module.exports = (options) => {
     const remoteTranslate = async function (value, language, fixedId, fromLanguage = 'zh') {
         const locales = TranslationContainer[fromLanguage];
         const toLocales = TranslationContainer[language];
+        const zhLocales = TranslationContainer['zh'];
 
         const trimedValue = value.trim();
 
@@ -57,18 +58,23 @@ module.exports = (options) => {
             finalTranslation = idTranslationMap[selectedType];
         }
 
+        if(Utils.isIdEmpty(finalTranslation)){
+            return {};
+        }
+
+        const chinaWord = language === 'zh' ? finalTranslation : value;
         let finalId = null;
         if (!Utils.isIdEmpty(fixedId)) {
             finalId = fixedId;
         } else if (selectedType) {
             if (selectedType === 'trim') {
-                finalId = Utils.getUniqueId(trimedId, value, locales, duplicateKeys);
+                finalId = Utils.getUniqueId(trimedId, chinaWord, zhLocales, duplicateKeys);
             } else {
                 finalId = fullId;
             }
         } else {
             if (!Utils.isIdEmpty(browserId)) {
-                finalId = Utils.getUniqueId(browserId, value, locales, duplicateKeys);;
+                finalId = Utils.getUniqueId(browserId, chinaWord, zhLocales, duplicateKeys);;
             }
         }
 

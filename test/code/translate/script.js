@@ -1,17 +1,15 @@
-import { formatMessage } from '~/locale-tools';
 
-const empty = formatMessage({id: 'new-string'});
+const empty = '新字符串';
 
+const afterEmpty = "你好吗 ";
 
-const afterEmpty = formatMessage({id: 'how-are-you-3'});
+const afterTwoEmpty = "你好吗  ";
 
-const afterTwoEmpty = formatMessage({id: 'how-are-you-2'});
+const beforeAfterTwoEmpty = " 你好吗  ";
 
-const beforeAfterTwoEmpty = formatMessage({id: 'how-are-you-1'});
-
-const beforeEmpty = formatMessage({id: 'how-are-you'});
+const beforeEmpty = "你好吗";
 // const middleEmpty = " 你好 吗  ";
 
-const approve = formatMessage({id: 'approve'});
+const approve = '批准';
 
 
