@@ -6,6 +6,9 @@ import parseParam from '~/param';
 const toolPath = '~/locale-tools';
 const encode = 'UTF8';
 const targetLocale = 'test/locale-t';
+const parseLocalJson = (source) => {
+    return JSON.parse(source.replace('export default ', ''));
+}
 jest.setTimeout(30000);
 
 describe('正确增加ID', () => {
@@ -25,7 +28,7 @@ describe('正确增加ID', () => {
         await i18n(pamras);
     });
 
-    it('对象属性动态化[fm]', async () => {
+    it('无需启动浏览器，自动翻译', async () => {
         const zhAfter = parseLocalJson(fs.readFileSync(path.resolve(parsed.target, 'zh.js'), encode));
         const enAfter = parseLocalJson(fs.readFileSync(path.resolve(parsed.target, 'en.js'), encode));
 
@@ -52,7 +55,7 @@ describe('正确增加ID', () => {
         expect(zhAfter['status-1']).toBe('状态');
 
         expect(enBefore['status-1']).toBe('state');
-        expect(enBefore['hello']).toBe('Hello');
+        expect(enBefore['hello']).toBe('hello');
     });
 
 
