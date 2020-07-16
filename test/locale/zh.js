@@ -213,5 +213,19 @@ export default {
   "import-check-mobilenumber-please-1": " 请输入复核人手机号码",
   "earth-2018-huanyu-1": "      ©2018 环宇信链 辽ICP备",
   "flowpath-last-legalrepresentative-operator-1": "      流程最后需法定代表人及经办人进行人脸识别，建议提前通知相关人员",
-  "submitted-successfully-1": "            提交成功"
+  "submitted-successfully-1": "            提交成功",
+  "null": "这是中文。",
+  "approval": "批准",
+  "how-are-you": "你好吗",
+  "how-are-you-1": " 你好吗  ",
+  "how-are-you-2": "你好吗  ",
+  "how-are-you-3": "你好吗 ",
+  "new-string": "新字符串",
+  "welcome": "欢迎",
+  "welcome-1": "欢迎 ",
+  "hello": " 你好 ",
+  "refuse": " 拒绝 ",
+  "empty-character": "空字符",
+  "free-chinese": "自在中文出现",
+  "state": "状态"
 }
