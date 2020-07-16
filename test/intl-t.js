@@ -1,8 +1,8 @@
-const i18n = require('../../../src/main');
+const i18n = require('../src/main');
 
 i18n({
     // 扫描目录
-    folders: ['test/code/translate/code'],
+    folders: ['test/code/translate'],
     // 忽略/排除目录，默认会忽略掉[target]参数指定的目录
     // excludes: ['test/code/vue', 'test/code/placeholder', 'test/intl.js'],
     // 自定义工具，默认为：import { FormattedMessage, formatMessage } from '~/locale-tools';
@@ -20,7 +20,7 @@ i18n({
     // translate: ['en', 'th'],
 
     // 指定zh.js en.js 生成的目录，默认为'src/locale'
-    target: 'test/code/translate/locale',
+    target: 'test/locale-t',
     // 是否打开浏览器，可查看自动抓取翻译等效果，若浏览器页面出现卡顿，在此模式下则可人工干预；默认为关闭
     headless: false,
 
