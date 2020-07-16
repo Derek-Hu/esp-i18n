@@ -2,6 +2,7 @@ const babelParser = require("@babel/parser");
 const settings = require('./settings');
 const traverse = require("@babel/traverse").default;
 const Utils = require('./utils');
+const path = require('path');
 
 const { asyncForEach } = Utils;
 const IDName = 'Labels';
@@ -198,7 +199,8 @@ const getterExpression = (vid) => {
     }
     return `${IDName}['${vid}']`;
 }
-module.exports = async (translate, filepath, content) => {
+
+module.exports = async (translate, filepath, content, errorVueFiles) => {
     let lines = content.split('\n');
 
     let isStart = false;
@@ -237,35 +239,45 @@ module.exports = async (translate, filepath, content) => {
         const lineWords = extractChinease(line);
         if (lineWords && lineWords.length) {
             await asyncForEach(lineWords, async matchWordInfo => {
-                const vid = cammelCase(await translate(matchWordInfo));
-                if (Utils.isIdEmpty(vid)) {
-                    return;
-                }
+                // const vid = cammelCase(await translate(matchWordInfo));
+                // if (Utils.isIdEmpty(vid)) {
+                //     return;
+                // }
                 const transformedWord = matchWordInfo.split('').map(function (k) {
                     if (/[.?()[\]*+={}/\\]/.test(k)) {
                         return '\\' + k
                     }
                     return k;
                 }).join('');
+                let replaceAction = null;
+
                 let reg = new RegExp('(\\w+\\s*=\\s*)(["\'])' + transformedWord + '\\2');
                 let attrMatch = line.match(reg);
                 if (attrMatch && attrMatch[0]) {
-                    line = line.replace(attrMatch[0], `:${attrMatch[1]}"${getterExpression(vid)}"`);
+                    replaceAction = (vid) => line.replace(attrMatch[0], `:${attrMatch[1]}"${getterExpression(vid)}"`);
+                    // line = line.replace(attrMatch[0], `:${attrMatch[1]}"${getterExpression(vid)}"`);
                 }
                 if (!attrMatch) {
                     reg = new RegExp(`(["'\`])${transformedWord}\\1`);
                     attrMatch = line.match(reg);
                     if (attrMatch && attrMatch[0]) {
-                        line = line.replace(reg, getterExpression(vid));
+                        replaceAction = (vid) => line.replace(reg, getterExpression(vid));
+                        // line = line.replace(reg, getterExpression(vid));
                     }
                 }
 
                 let currentWord = matchWordInfo;
                 if (!attrMatch) {
                     currentWord = matchWordInfo.trim();
-                    line = line.replace(currentWord, `{{${getterExpression(vid)}}}`);
+                    replaceAction = (vid) => line.replace(currentWord, `{{${getterExpression(vid)}}}`);
+                    // line = line.replace(currentWord, `{{${getterExpression(vid)}}}`);
                 }
                 
+                const vid = cammelCase(await translate(currentWord));
+                if (Utils.isIdEmpty(vid)) {
+                    return;
+                }
+                line = replaceAction(vid);
                 labels[vid] = currentWord;
             });
         }
@@ -280,6 +292,7 @@ module.exports = async (translate, filepath, content) => {
         if (isUpdated) {
             return modified;
         }
+        errorVueFiles.push(path.relative(process.cwd(), filepath));
         return `const ${IDName} = {\n` + Object.keys(labels).map(w => `${w}=${labels[w]}`).join(',\n') + '\n};\n</templte>\n' + modified;
     }
     return content;
