@@ -86,10 +86,10 @@ module.exports = (options) => {
         if (!Utils.isIdEmpty(fixedId)) {
             finalId = fixedId;
         } else if (selectedType) {
-            if (selectedType === 'trim') {
-                finalId = Utils.getUniqueId(trimedId, chinaWord, zhLocales, duplicateKeys);
-            } else {
+            if (selectedType === 'id') {
                 finalId = fullId;
+            } else {
+                finalId = Utils.getUniqueId(trimedId || trimedsEqualId, chinaWord, zhLocales, duplicateKeys);
             }
         } else {
             if (!Utils.isIdEmpty(browserId)) {
