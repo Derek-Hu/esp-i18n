@@ -293,7 +293,7 @@ module.exports = async (translate, filepath, content, errorVueFiles) => {
             return modified;
         }
         errorVueFiles.push(path.relative(process.cwd(), filepath));
-        return `const ${IDName} = {\n` + Object.keys(labels).map(w => `${w}=${labels[w]}`).join(',\n') + '\n};\n</templte>\n' + modified;
+        return `const ${IDName} = {\n` + Object.keys(labels).map(w => `\t${w}:'${labels[w]}'`).join(',\n') + '\n};\n' + modified;
     }
     return content;
 }
