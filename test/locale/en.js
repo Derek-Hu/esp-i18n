@@ -214,7 +214,6 @@ export default {
   "earth-2018-huanyu-1": "? 2018 Huanyu Xinlian Liaoning ICP preparation",
   "flowpath-last-legalrepresentative-operator-1": "At the end of the process, the legal representative and the operator are required to carry out face recognition. It is recommended to inform relevant personnel in advance",
   "submitted-successfully-1": "Submitted successfully",
-  "null": "This is Chinese.",
   "approval": "approval",
   "how-are-you": "how are you",
   "how-are-you-1": "how are you",

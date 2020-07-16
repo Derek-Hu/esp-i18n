@@ -39,7 +39,7 @@ module.exports = (options) => {
         const trimedsEqualId = keys.find(key => {
             return !Utils.isIdEmpty(locales[key]) ? `${locales[key]}`.trim() === trimedValue : false;
         });
-
+        
         const idTranslationMap = {
             id: Utils.isIdEmpty(fullId) ? null : toLocales[fullId],
             trim: Utils.isIdEmpty(trimedId) ? null : toLocales[trimedId],
@@ -113,7 +113,6 @@ module.exports = (options) => {
 
         if (!TranslationContainer) {
             TranslationContainer = Utils.loadLocales(translateLanguages, options.target);
-
             debugger;
             // 同步各Locale文件Id
             // 1. 先各文件同步给中文zh.js
@@ -157,7 +156,7 @@ module.exports = (options) => {
             if (Utils.isIdEmpty(id) || Utils.isIdEmpty(translation)) {
                 return null;
             }
-            if (code === 'en') {
+            if (Utils.isIdEmpty(fixedId)) {
                 fixedId = id;
                 TranslationContainer['zh'][fixedId] = value;
             }

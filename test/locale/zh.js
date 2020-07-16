@@ -214,7 +214,6 @@ export default {
   "earth-2018-huanyu-1": "      ©2018 环宇信链 辽ICP备",
   "flowpath-last-legalrepresentative-operator-1": "      流程最后需法定代表人及经办人进行人脸识别，建议提前通知相关人员",
   "submitted-successfully-1": "            提交成功",
-  "null": "这是中文。",
   "approval": "批准",
   "how-are-you": "你好吗",
   "how-are-you-1": " 你好吗  ",

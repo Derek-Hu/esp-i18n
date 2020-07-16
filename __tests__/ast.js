@@ -18,6 +18,7 @@ describe('解析百度翻译页面结果', () => {
         'test/result'],
         // excludes: ['test/code/vue', 'test/code/placeholder', 'test/code/translate', 'test/locale-script'],
         localTools: toolPath,
+        headless: false,
         translate: ['th'],
         target: 'test/locale',
         srcCopyFolder: 'dist',

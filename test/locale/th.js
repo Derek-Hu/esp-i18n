@@ -214,7 +214,6 @@ export default {
   "earth-2018-huanyu-1": "การเตรียมการของห่วงโซ่การสื่อสารโทรคมนาคมลิขสิทธิ์",
   "flowpath-last-legalrepresentative-operator-1": "ในที่สุดตัวแทนทางกฎหมายและผู้จัดการจะต้องตระหนักถึงใบหน้าของมนุษย์",
   "submitted-successfully-1": "ส่งสำเร็จ",
-  "null": "ชุดสร้าง AP เรียบร้อยแล้ว",
   "approval": "อนุมัติ",
   "how-are-you": "สบายดีมั้ย",
   "how-are-you-1": "สบายดีมั้ย",
