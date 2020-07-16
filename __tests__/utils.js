@@ -86,7 +86,7 @@ test('locale生成ID唯一化', () => {
     }, {
         id: 'hello-2',
         value: '哈啰-2',
-        valid: 'hello-2-1',
+        valid: 'hello-3',
     }];
 
 
@@ -94,8 +94,8 @@ test('locale生成ID唯一化', () => {
         let uniqueId = Utils.getUniqueId(id, value, zhLocaleData, duplicateKeys);
         expect(uniqueId).toBe(valid);
     });
-    expect(duplicateKeys).toEqual({ hello: 2, "hello-2": 1 });
-    expect(zhLocaleData).toEqual({ hello: '你好', 'hello-1': '您好', 'hello-2': '哈啰', "hello-2-1": "哈啰-2", });
+    expect(duplicateKeys).toEqual({ hello: 3 });
+    expect(zhLocaleData).toEqual({ hello: '你好', 'hello-1': '您好', 'hello-2': '哈啰', "hello-3": "哈啰-2", });
 
 });
 

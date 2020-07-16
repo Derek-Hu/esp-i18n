@@ -44,9 +44,10 @@ module.exports.writeSync = function (outputFilePath, content) {
     fs.writeFileSync(outputFilePath, content);
 }
 
-module.exports.getUniqueId = (id, value, zhLocaleData, duplicateKeys) => {
+module.exports.getUniqueId = (original, value, zhLocaleData, duplicateKeys) => {
+    const id = original.replace(/\-\d+$/, '');
     let validId = id;
-
+    
     while ((validId in zhLocaleData) && (zhLocaleData[validId] !== value)) {
         if (!duplicateKeys[id]) {
             duplicateKeys[id] = 1;
