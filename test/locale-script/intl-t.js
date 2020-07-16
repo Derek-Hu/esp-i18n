@@ -1,4 +1,4 @@
-const i18n = require('../src/main');
+const i18n = require('../../src/main');
 
 i18n({
     // 扫描目录

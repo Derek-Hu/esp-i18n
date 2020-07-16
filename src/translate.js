@@ -46,16 +46,24 @@ module.exports = (options) => {
         let finalTranslation = null;
         let browserId = null;
 
-        if (!selectedType) {
+        if(selectedType==='id'){
+            finalTranslation = idTranslationMap[selectedType];
+        }else{
             const placeholder = '__';
             const template = value.replace(trimedValue, placeholder);
-            const { id, translation } = await getTranslation(trimedValue, language, fromLanguage);
-            if (!Utils.isIdEmpty(translation)) {
-                browserId = id;
-                finalTranslation = template.replace(placeholder, translation);
+
+            let trimedTranslation = null;
+
+            if (!selectedType) {
+                const { id, translation } = await getTranslation(trimedValue, language, fromLanguage);
+                if (!Utils.isIdEmpty(translation)) {
+                    browserId = id;
+                    trimedTranslation = translation;
+                }
+            }else{
+                trimedTranslation = idTranslationMap[selectedType];
             }
-        } else {
-            finalTranslation = idTranslationMap[selectedType];
+            finalTranslation = template.replace(placeholder, trimedTranslation);
         }
 
         if(Utils.isIdEmpty(finalTranslation)){
