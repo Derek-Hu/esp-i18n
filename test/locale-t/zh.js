@@ -1,5 +1,5 @@
 export default {
-  "status": "状态",
+  "status": " 状态 ",
   "onlyInEnglish": "只有英语",
   "onlyInChina": "自在中文出现",
   "approve": "批准",

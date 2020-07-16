@@ -9,7 +9,7 @@ const beforeEmpty = "你好吗";
 
 const beforeAfterTwoEmpty = " 你好吗  ";
 
-// const middleEmpty = " 你好 吗  ";
+const status = "状态";
 
 const approve = '批准';
 

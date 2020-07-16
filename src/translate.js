@@ -36,19 +36,26 @@ module.exports = (options) => {
         const keys = Object.keys(locales);
         const fullId = keys.find(key => locales[key] === value);
         const trimedId = keys.find(key => locales[key] === trimedValue);
+        const trimedsEqualId = keys.find(key => {
+            return !Utils.isIdEmpty(locales[key]) ? `${locales[key]}`.trim() === trimedValue : false;
+        });
 
         const idTranslationMap = {
-            id: toLocales[fullId],
-            trim: toLocales[trimedId],
+            id: Utils.isIdEmpty(fullId) ? null : toLocales[fullId],
+            trim: Utils.isIdEmpty(trimedId) ? null : toLocales[trimedId],
+            equal: Utils.isIdEmpty(trimedsEqualId) ? null : toLocales[trimedsEqualId],
         };
-        const selectedType = !Utils.isIdEmpty(idTranslationMap.id) ? 'id' : (!Utils.isIdEmpty(idTranslationMap.trim) ? 'trim' : null);
+        const selectedType = Object.keys(idTranslationMap).find(type => {
+            return !Utils.isIdEmpty(idTranslationMap[type]);
+        });
+        // const selectedType = !Utils.isIdEmpty(idTranslationMap.id) ? 'id' : (!Utils.isIdEmpty(idTranslationMap.trim) ? 'trim' : (!Utils.isIdEmpty(idTranslationMap.equal) ? 'equal' : null));
 
         let finalTranslation = null;
         let browserId = null;
 
-        if(selectedType==='id'){
+        if (selectedType === 'id') {
             finalTranslation = idTranslationMap[selectedType];
-        }else{
+        }else {
             const placeholder = '__';
             const template = value.replace(trimedValue, placeholder);
 
@@ -60,13 +67,17 @@ module.exports = (options) => {
                     browserId = id;
                     trimedTranslation = translation;
                 }
-            }else{
-                trimedTranslation = idTranslationMap[selectedType];
+            } else {
+                if (selectedType === 'equal') {
+                    trimedTranslation = `${idTranslationMap[selectedType]}`.trim();
+                }else{
+                    trimedTranslation = idTranslationMap[selectedType];
+                } 
             }
             finalTranslation = template.replace(placeholder, trimedTranslation);
         }
 
-        if(Utils.isIdEmpty(finalTranslation)){
+        if (Utils.isIdEmpty(finalTranslation)) {
             return {};
         }
 

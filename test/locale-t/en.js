@@ -1,5 +1,5 @@
 export default {
-  "status": "state",
+  "status": " state ",
   "onlyInEnglish": "only in english",
   "onlyInChina": "Free Chinese",
   "approve": "approve",
