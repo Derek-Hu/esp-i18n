@@ -73,7 +73,6 @@ export default {
   "subtitle": "ชื่อย่อย",
   "unhappy": "ไม่มีความสุข",
   "happy": "ร่าเริง",
-  "well": "ดี",
   "title": "หัวเรื่อง",
   "24-hours-a-day": "ชั่วโมงของวัน",
   "ha-ha": "ฮ่าฮ่า",
@@ -202,7 +201,6 @@ export default {
   "business-contract-number-please-enter-1": "กรุณาใส่หมายเลขสัญญาการค้า",
   "import-check-mobilenumber-please": "กรุณาป้อนหมายเลขโทรศัพท์มือถือของผู้ตรวจสอบ",
   "skip-fund-tabulation-jump": "วินาทีต่อมากระโดดไปยังหน้ารายชื่อพรรคทุน",
-  "well-1": "ดี",
   "this-is-chinese-1": "มันเป็นภาษาจีน",
   "business-contract-number-please-enter-1-1": "กรุณาใส่หมายเลขสัญญาการค้า",
   "businesscontract-number-please-enter-1": "กรุณาใส่หมายเลขสัญญาการค้า",
@@ -226,5 +224,7 @@ export default {
   "refuse": " ปฏิเสธ ",
   "empty-character": "อักขระที่ว่างเปล่า",
   "free-chinese": "ฟรีภาษาจีน",
-  "state": "สภาพ"
+  "state": "สภาพ",
+  "well": "\n            ดี\n        ",
+  "well-1": "ดี"
 }

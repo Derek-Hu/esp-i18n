@@ -8,12 +8,13 @@ const encode = 'UTF8';
 const parseLocalJson = (source) => {
     return JSON.parse(source.replace('export default ', ''));
 }
+const astPath = 'test/code/ast';
 jest.setTimeout(30000);
 
 describe('解析百度翻译页面结果', () => {
     const pamras = {
         // 扫描目录
-        folders: ['test/code/ast', 
+        folders: [astPath, 
         // 'test/code/remote', 
         'test/result'],
         // excludes: ['test/code/vue', 'test/code/placeholder', 'test/code/translate', 'test/locale-script'],
@@ -25,10 +26,21 @@ describe('解析百度翻译页面结果', () => {
     };
 
     const parsed = parseParam(pamras);
-    const baseFolder = parsed.srcTarget;
+    const {srcTarget: baseFolder, target} = parsed;
 
     beforeAll(async () => {
         await i18n(pamras);
+    });
+
+    it('正确处理JSX空白', async () => {
+        const zh = parseLocalJson(fs.readFileSync(path.resolve(target, 'zh.js'), encode));
+        // 正确处理空白
+        expect(zh['well-1']).toBe('好的');
+
+        const after = fs.readFileSync(path.resolve(baseFolder, astPath, 'import-chinease.js'), encode);
+        const correct = fs.readFileSync(path.resolve(process.cwd(), 'test/result', 'import-chinease.js'), encode);
+
+        expect(after).toBe(correct);
     });
 
     it('支持 import {formatMessage as fm} from --> fm({id})', async () => {
@@ -142,15 +154,6 @@ describe('解析百度翻译页面结果', () => {
         srcCopyFolder: 'dist',
     };
     const parsedRemote = parseParam(remoteParams);
-
-    it('使用百度翻译，生成zh，en文件', async () => {
-
-        // await i18n(remoteParams);
-        // const zhExists = fs.existsSync(path.resolve(parsedRemote.target, 'zh.js'));
-        // const enExists = fs.existsSync(path.resolve(parsedRemote.target, 'en.js'));
-        // expect(zhExists).toBe(true);
-        // expect(enExists).toBe(true);
-    });
 
     it('各语言Key相同', async () => {
         const zh = parseLocalJson(fs.readFileSync(path.resolve(parsed.target, 'zh.js'), encode));

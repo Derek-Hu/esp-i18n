@@ -30,7 +30,6 @@ export default {
   "subtitle": "子标题",
   "unhappy": "不开心",
   "happy": "开心",
-  "well": "好的",
   "title": "标题",
   "24-hours-a-day": "的一天24小时",
   "ha-ha": "happy哈哈，",
@@ -202,7 +201,6 @@ export default {
   "skip-fund-tabulation-jump": "秒后跳转到资金方列表页",
   "submit-now": "立即提交",
   "business-contract-number-please-enter-1": "请输入  贸易合同编号",
-  "well-1": "\n            好的\n        ",
   "this-is-chinese-1": "这是中文\n        ",
   "business-contract-number-please-enter-1-1": "  请输入  贸易合同编号   ",
   "businesscontract-number-please-enter-1": "  请输入贸易合同编号",
@@ -226,5 +224,7 @@ export default {
   "refuse": " 拒绝 ",
   "empty-character": "空字符",
   "free-chinese": "自在中文出现",
-  "state": "状态"
+  "state": "状态",
+  "well": "\n            好的\n        ",
+  "well-1": "好的"
 }

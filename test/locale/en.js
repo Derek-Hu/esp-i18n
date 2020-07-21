@@ -34,7 +34,6 @@ export default {
   "subtitle": "subtitle",
   "unhappy": "unhappy",
   "happy": "happy",
-  "well": "well",
   "title": "title",
   "24-hours-a-day": "24 hours a day",
   "ha-ha": "Ha ha,",
@@ -202,7 +201,6 @@ export default {
   "skip-fund-tabulation-jump": "Jump to the fund side list page in seconds",
   "power-of-attorney-optional": "Power of attorney (optional)",
   "business-contract-number-please-enter-1": "Please enter the trade contract number",
-  "well-1": "well",
   "this-is-chinese-1": "This is Chinese",
   "business-contract-number-please-enter-1-1": "Please enter the trade contract number",
   "businesscontract-number-please-enter-1": "Please enter the trade contract number",
@@ -226,5 +224,7 @@ export default {
   "refuse": " refuse ",
   "empty-character": "Empty character",
   "free-chinese": "Free Chinese",
-  "state": "state"
+  "state": "state",
+  "well": "\n            well\n        ",
+  "well-1": "well"
 }

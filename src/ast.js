@@ -111,12 +111,15 @@ module.exports = (source, babelConfig, { localToolsPath, jsFunc }) => {
             if (!Utils.isChineaseText(value)) {
                 return;
             }
+            const trimed = value.trim();
+            const placeholder = '____';
+            const template = value.replace(trimed, placeholder);
             const call = {
                 isComponent: true,
                 start: node.start,
                 end: node.end,
-                value: value,
-                getReplacement: (id, funcName) => `{${funcName}({id: '${id}'})}`
+                value: trimed,
+                getReplacement: (id, funcName) => template.replace(placeholder, `{${funcName}({id: '${id}'})}`)
             }
             entries.push(call);
         }

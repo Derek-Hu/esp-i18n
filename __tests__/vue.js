@@ -12,6 +12,9 @@ const toolPath = '~/locale-tools';
 const filePath = 'test/code/vue';
 const babelConfig = settings.babelConfig(false);
 const IDName = 'Labels';
+const parseLocalJson = (source) => {
+    return JSON.parse(source.replace('export default ', ''));
+}
 
 jest.setTimeout(30000);
 
@@ -104,7 +107,7 @@ describe('解析百度翻译页面结果', () => {
     };
 
     const parsed = parseParam(pamras);
-    const baseFolder = parsed.srcTarget;
+    const { srcTarget: baseFolder, target } = parsed;
 
     beforeAll(async () => {
         await i18n(pamras);
@@ -203,6 +206,15 @@ describe('解析百度翻译页面结果', () => {
 
     it('当export default 空对象时，自动增加Labels属性', async () => {
         expectLabelKeyLength('data-no-data-default.vue');
+        const zh = parseLocalJson(fs.readFileSync(path.resolve(target, 'zh.js'), encode));
+        // 正确处理空白
+        expect(zh['well-1']).toBe('好的');
+
+        const after = fs.readFileSync(path.resolve(baseFolder, filePath, 'data-no-data-default.vue'), encode);
+        const correct = fs.readFileSync(path.resolve(process.cwd(), 'test/result', 'data-no-data-default.vue'), encode);
+
+        expect(after).toBe(correct);
+        
     });
 
     it('当export对象只有一个属性，但不包含data方法时，自动增加Labels属性', async () => {
