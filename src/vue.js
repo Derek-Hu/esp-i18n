@@ -90,7 +90,7 @@ const parseVueData = (source, i18n) => {
                         if (dataMethod.value.body.type === 'BlockStatement') {
                             body = dataMethod.value.body.body;
                             bodyParent = dataMethod.value.body;
-                        }else if(dataMethod.value.body.type === 'ObjectExpression'){
+                        }else {
                             isArrowDirect = true;
                         }
                     }
@@ -128,6 +128,15 @@ const parseVueData = (source, i18n) => {
                 }
                 const objectExpression = isArrowDirect ? dataMethod.value.body : returnStatment.argument;
                 if (objectExpression.type !== 'ObjectExpression') {
+                    actions.push({
+                        start: objectExpression.start,
+                        end: objectExpression.end,
+                        isInsert: false,
+                        getReplacement: () => `({
+                            ...(${source.slice(objectExpression.start, objectExpression.end)}),
+                            ${IDName}: ${JSON.stringify(i18n, null, 2)}
+                        })`
+                    });
                     return;
                 }
                 if (!objectExpression.properties || !objectExpression.properties.length) {

@@ -9,7 +9,7 @@ const ast = require('./ast');
 const translateGenerator = require('./translate');
 const vue = require('./vue');
 
-const {asyncForEach} = Utils;
+const { asyncForEach } = Utils;
 
 const getVueSource = async function (translate, path, content, errorVueFiles) {
     var contentOneLine = await vue(translate, path, content, errorVueFiles);
@@ -42,9 +42,12 @@ module.exports = async (params) => {
         width: 20,
         total: fileNeedProcessing.length * 2 + 1,
     });
+    const jsErrors = {};
+
     await asyncForEach(fileNeedProcessing, async file => {
         fileIdx++;
-        progressBar.tick({ fileIdx: fileIdx, msg: `正在处理文件：${path.relative(process.cwd(), file)}` });
+        const shortFile = path.relative(process.cwd(), file);
+        progressBar.tick({ fileIdx: fileIdx, msg: `正在处理文件：${shortFile}` });
 
         const isVueFile = /\.vue$/.test(file);
         const fileContent = fs.readFileSync(file, 'UTF8');
@@ -60,7 +63,8 @@ module.exports = async (params) => {
             }
 
             await asyncForEach(entries, async entry => {
-                if(Utils.isIdEmpty(entry.value)){
+                if (Utils.isIdEmpty(entry.value)) {
+                    // Add [import from ''] Statement
                     source = source.slice(0, entry.start) + entry.getReplacement(null, finalFuncName) + source.slice(entry.end);
                     return;
                 }
@@ -69,6 +73,11 @@ module.exports = async (params) => {
 
                 if (isSucess) {
                     source = source.slice(0, entry.start) + entry.getReplacement(id, finalFuncName) + source.slice(entry.end);
+                } else {
+                    if (!jsErrors[shortFile]) {
+                        jsErrors[shortFile] = {};
+                    }
+                    jsErrors[shortFile][entry.value] = true;
                 }
             });
 
@@ -84,14 +93,36 @@ module.exports = async (params) => {
             console.error(`解析文件失败：${file}`, e);
             console.log(jsContent);
         }
-        progressBar.tick({ fileIdx, msg: `处理文件完成：${path.relative(process.cwd(), file)}` });
+        progressBar.tick({ fileIdx, msg: `处理文件完成：${shortFile}` });
     });
     progressBar.tick({ fileIdx, msg: '' });
-    if(errorVueFiles.length){
+    
+    if (errorVueFiles.length) {
         console.log();
         console.error('未能正确处理的Vue文件:');
         console.error(errorVueFiles.join('\n'));
         console.log();
+    }
+
+    if (Object.keys(jsErrors).length) {
+        console.log();
+        console.error('存在未翻译完全的JS文件，再次执行本命令将自动修复：');
+        console.error(Object.keys(jsErrors).join('\n'));
+        console.log();
+    } else {
+        const { translateLanguages } = options;
+        const sizes = translateLanguages.map(language => {
+            const source = fs.readFileSync(path.resolve(options.target, `${language}.js`), 'UTF8');
+            return Object.keys(JSON.parse(source.replace(settings.Header, ''))).length;
+        });
+        const isAllKeysEquals = sizes.every((size) => {
+            return size === sizes[0];
+        });
+        if (!isAllKeysEquals) {
+            console.log();
+            console.error('中文翻译至其他语言时异常，再次执行本命令将自动修复。');
+            console.log();
+        }
     }
     await browserInstance.close();
 }

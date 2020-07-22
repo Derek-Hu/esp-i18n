@@ -253,4 +253,30 @@ describe('解析百度翻译页面结果', () => {
         expectLabelKeyLength('data-arrow/data-empty-redirect.vue');
     });
 
+    it('data return 非对象写法call', async () => {
+        expectLabelKeyLength('data-arrow/data-return-call.vue');
+    });
+
+    it('data return 非对象写法...spread', async () => {
+        expectLabelKeyLength('data-arrow/data-return-spread.vue');
+        
+    });
+
+    it('data return 非对象写法 variable', async () => {
+        expectLabelKeyLength('data-arrow/data-return-variable.vue');
+    });
+
+    it('data return 非对象写法call', async () => {
+        expectLabelKeyLength('return/data-return-call.vue');
+    });
+
+    it('data return 非对象写法...spread', async () => {
+        expectLabelKeyLength('return/data-return-spread.vue');
+        
+    });
+
+    it('data return 非对象写法 variable', async () => {
+        expectLabelKeyLength('return/data-return-variable.vue');
+    });
+
 });
