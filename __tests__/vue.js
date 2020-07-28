@@ -75,7 +75,9 @@ const getOriginalKeys = (source) => {
             const node = _node.node;
             if (node.key.name === IDName) {
                 hasLabelKey = true;
-                labelKeyLength = node.value.properties.length;
+                if(node.value.properties){
+                    labelKeyLength = node.value.properties.length;
+                }
             }
         }
     });
