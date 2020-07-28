@@ -11,8 +11,8 @@ const vue = require('./vue');
 
 const { asyncForEach } = Utils;
 
-const getVueSource = async function (translate, path, content, errorVueFiles) {
-    var contentOneLine = await vue(translate, path, content, errorVueFiles);
+const getVueSource = async function (translate, path, content, errorVueFiles, suspectVueFiles) {
+    var contentOneLine = await vue(translate, path, content, errorVueFiles, suspectVueFiles);
     const placeholder = '____VUE_PLACEHOLDER____';
     const scripts = '<script>\n' + placeholder + '</script>';
     const matchs = contentOneLine.match(/<script>((.*\n)*)<\/script>/);
@@ -31,6 +31,7 @@ module.exports = async (params) => {
 
     const translate = translateGenerator(options);
     const errorVueFiles = [];
+    const suspectVueFiles = [];
     const babelConfig = settings.babelConfig(options.isFlow);
 
     const fileNeedProcessing = Utils.getProcessFiles(options.folders, options.excludes);
@@ -51,7 +52,7 @@ module.exports = async (params) => {
 
         const isVueFile = /\.vue$/.test(file);
         const fileContent = fs.readFileSync(file, 'UTF8');
-        const [jsContent, wrapper, placeholder] = isVueFile ? await getVueSource(translate, file, fileContent, errorVueFiles) : [fileContent, null];
+        const [jsContent, wrapper, placeholder] = isVueFile ? await getVueSource(translate, file, fileContent, errorVueFiles, suspectVueFiles) : [fileContent, null];
         let source = jsContent;
 
         try {
@@ -99,8 +100,15 @@ module.exports = async (params) => {
     
     if (errorVueFiles.length) {
         console.log();
-        console.error('未能正确处理的Vue文件:');
+        console.error('未能正确处理的Vue文件如下：');
         console.error(errorVueFiles.join('\n'));
+        console.log();
+    }
+
+    if (suspectVueFiles.length) {
+        console.log();
+        console.error(`可能处理异常的Vue文件如下，原文件中存在${'Labels'}字符串，请检查并确认代码修改后，data函数中是否存在属性${'Labels'}覆盖的情况。`);
+        console.error(suspectVueFiles.join('\n'));
         console.log();
     }
 

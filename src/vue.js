@@ -59,6 +59,7 @@ const parseVueData = (source, i18n) => {
     const PluginOptions = settings.babelConfig(false);
     const astTree = babelParser.parse(source, PluginOptions);
     const actions = [];
+    let suspect = false;
     traverse(astTree, {
         ExportDefaultDeclaration(_node) {
             const declaration = _node.node.declaration;
@@ -128,6 +129,9 @@ const parseVueData = (source, i18n) => {
                 }
                 const objectExpression = isArrowDirect ? dataMethod.value.body : returnStatment.argument;
                 if (objectExpression.type !== 'ObjectExpression') {
+                    if(source.indexOf(IDName)!==-1){
+                        suspect = true;
+                    }
                     actions.push({
                         start: objectExpression.start,
                         end: objectExpression.end,
@@ -192,6 +196,7 @@ const parseVueData = (source, i18n) => {
         source,
         isUpdated: actions.length,
         actions,
+        suspect,
     };
 }
 
@@ -209,7 +214,7 @@ const getterExpression = (vid) => {
     return `${IDName}['${vid}']`;
 }
 
-module.exports = async (translate, filepath, content, errorVueFiles) => {
+module.exports = async (translate, filepath, content, errorVueFiles, suspectVueFiles) => {
     let lines = content.split('\n');
 
     let isStart = false;
@@ -296,8 +301,11 @@ module.exports = async (translate, filepath, content, errorVueFiles) => {
     const newSource = newLines.join('\n');
     if (Object.keys(labels).length) {
         const scripts = getVueScriptContent(content, filepath);
-        const { source: modifiedScripts, actions, isUpdated } = parseVueData(scripts, labels, IDName);
+        const { source: modifiedScripts, suspect, isUpdated } = parseVueData(scripts, labels, IDName);
         const modified = updateModifedScripts(newSource, modifiedScripts);
+        if(suspect){
+            suspectVueFiles.push(path.relative(process.cwd(), filepath));
+        }
         if (isUpdated) {
             return modified;
         }

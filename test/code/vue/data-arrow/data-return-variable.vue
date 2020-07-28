@@ -9,7 +9,9 @@
 </template>
 
 <script>
-const VueData = {};
+const VueData = {
+  Labels: 100,
+};
 export default {
   async mounted() {},
   data: () => VueData,
