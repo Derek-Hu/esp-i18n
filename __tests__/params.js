@@ -40,6 +40,13 @@ test('必须提供的参数配置', () => {
         });
     }).toThrow(`请配置localTools参数，以提供i18n工具函数。如localTools配置为'~/localTools', 则生成代码import {formatMessage} from '~/localTools'`);
 
+    expect(() => {
+        paramParser({
+            folders: ['src'],
+            idName: '100',
+            localTools: '~/locale-tools',
+        });
+    }).toThrow(`idName变量只能包含数字、字母、_、$，且不能以数字开头`);
 });
 
 test('正确处理配置参数默认值', () => {

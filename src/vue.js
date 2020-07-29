@@ -3,10 +3,8 @@ const settings = require('./settings');
 const traverse = require("@babel/traverse").default;
 const Utils = require('./utils');
 const path = require('path');
-const chalk = require('chalk');
 
 const { asyncForEach } = Utils;
-const IDName = 'Labels';
 
 const cammelCase = (id) => {
     if (Utils.isEmpty(id)) {
@@ -26,7 +24,7 @@ const cammelCase = (id) => {
     }, []).join('');
 }
 
-const parseVueData = (source, i18n) => {
+const parseVueData = (source, i18n, idLabel) => {
     const PluginOptions = settings.babelConfig(false);
     const astTree = babelParser.parse(source, PluginOptions);
     const actions = [];
@@ -41,7 +39,7 @@ const parseVueData = (source, i18n) => {
                         start: declaration.start,
                         end: declaration.end,
                         isInsert: false,
-                        getReplacement: () => `{\n\tdata(){\n\t\treturn {\n\t\t\t ${IDName}: ${JSON.stringify(i18n, null, 2)}\n\t\t\t}\n\t\t}\n\t}`
+                        getReplacement: () => `{\n\tdata(){\n\t\treturn {\n\t\t\t ${idLabel}: ${JSON.stringify(i18n, null, 2)}\n\t\t\t}\n\t\t}\n\t}`
                     });
                     return;
                 }
@@ -72,7 +70,7 @@ const parseVueData = (source, i18n) => {
                         start: properties[properties.length - 1].start,
                         end: properties[properties.length - 1].end,
                         isInsert: true,
-                        getReplacement: () => `,\n\tdata(){\n\t\treturn {\n\t\t\t${IDName}: ${JSON.stringify(i18n, null, 2)}\n\t\t}\n\t}`
+                        getReplacement: () => `,\n\tdata(){\n\t\treturn {\n\t\t\t${idLabel}: ${JSON.stringify(i18n, null, 2)}\n\t\t}\n\t}`
                     });
                     return;
                 }
@@ -83,7 +81,7 @@ const parseVueData = (source, i18n) => {
                             start: bodyParent.start,
                             end: bodyParent.end,
                             isInsert: false,
-                            getReplacement: () => `{\nreturn {\n ${IDName}: ${JSON.stringify(i18n, null, 2)}\n}\n}`
+                            getReplacement: () => `{\nreturn {\n ${idLabel}: ${JSON.stringify(i18n, null, 2)}\n}\n}`
                         });
                         return;
                     }
@@ -93,14 +91,14 @@ const parseVueData = (source, i18n) => {
                             start: body[body.length - 1].start,
                             end: body[body.length - 1].end,
                             isInsert: true,
-                            getReplacement: () => `\n\treturn {\n\t\t ${IDName}: ${JSON.stringify(i18n, null, 2)}\n\t\t}`
+                            getReplacement: () => `\n\treturn {\n\t\t ${idLabel}: ${JSON.stringify(i18n, null, 2)}\n\t\t}`
                         });
                         return;
                     }
                 }
                 const objectExpression = isArrowDirect ? dataMethod.value.body : returnStatment.argument;
                 if (objectExpression.type !== 'ObjectExpression') {
-                    if (source.indexOf(IDName) !== -1) {
+                    if (source.indexOf(idLabel) !== -1) {
                         suspect = true;
                     }
                     actions.push({
@@ -109,7 +107,7 @@ const parseVueData = (source, i18n) => {
                         isInsert: false,
                         getReplacement: () => `({
                             ...(${source.slice(objectExpression.start, objectExpression.end)}),
-                            ${IDName}: ${JSON.stringify(i18n, null, 2)}
+                            ${idLabel}: ${JSON.stringify(i18n, null, 2)}
                         })`
                     });
                     return;
@@ -119,17 +117,17 @@ const parseVueData = (source, i18n) => {
                         start: objectExpression.start,
                         end: objectExpression.end,
                         isInsert: false,
-                        getReplacement: () => `{\n\t\t\t${IDName}: ${JSON.stringify(i18n, null, 2)}\n\t\t\t}`
+                        getReplacement: () => `{\n\t\t\t${idLabel}: ${JSON.stringify(i18n, null, 2)}\n\t\t\t}`
                     });
                     return;
                 }
-                const hasLabels = objectExpression.properties.find(p => p.type === 'ObjectProperty' && p.key.name === IDName);
+                const hasLabels = objectExpression.properties.find(p => p.type === 'ObjectProperty' && p.key.name === idLabel);
                 if (!hasLabels) {
                     actions.push({
                         start: objectExpression.properties[0].start,
                         end: objectExpression.properties[0].end,
                         isInsert: true,
-                        getReplacement: () => `,\n\t\t\t${IDName}: ${JSON.stringify(i18n, null, 2)}`
+                        getReplacement: () => `,\n\t\t\t${idLabel}: ${JSON.stringify(i18n, null, 2)}`
                     });
                     return;
                 }
@@ -171,14 +169,14 @@ const parseVueData = (source, i18n) => {
     };
 }
 
-const getterExpression = (vid) => {
+const getterExpression = (vid, idName) => {
     if (/^[a-z_A-Z]+[\da-z_A-Z]*$/.test(vid)) {
-        return `${IDName}.${vid}`;
+        return `${idName}.${vid}`;
     }
-    return `${IDName}['${vid}']`;
+    return `${idName}['${vid}']`;
 }
 
-module.exports = async (translate, filepath, content, errorVueFiles, suspectVueFiles) => {
+module.exports = async (translate, filepath, content, errorVueFiles, suspectVueFiles, IDName) => {
     let lines = content.split('\n');
 
     let isStart = false;
@@ -232,23 +230,20 @@ module.exports = async (translate, filepath, content, errorVueFiles, suspectVueF
                 let reg = new RegExp('(\\w+\\s*=\\s*)(["\'])' + transformedWord + '\\2');
                 let attrMatch = line.match(reg);
                 if (attrMatch && attrMatch[0]) {
-                    replaceAction = (vid) => line.replace(attrMatch[0], `:${attrMatch[1]}"${getterExpression(vid)}"`);
-                    // line = line.replace(attrMatch[0], `:${attrMatch[1]}"${getterExpression(vid)}"`);
+                    replaceAction = (vid) => line.replace(attrMatch[0], `:${attrMatch[1]}"${getterExpression(vid, IDName)}"`);
                 }
                 if (!attrMatch) {
                     reg = new RegExp(`(["'\`])${transformedWord}\\1`);
                     attrMatch = line.match(reg);
                     if (attrMatch && attrMatch[0]) {
-                        replaceAction = (vid) => line.replace(reg, getterExpression(vid));
-                        // line = line.replace(reg, getterExpression(vid));
+                        replaceAction = (vid) => line.replace(reg, getterExpression(vid, IDName));
                     }
                 }
 
                 let currentWord = matchWordInfo;
                 if (!attrMatch) {
                     currentWord = matchWordInfo.trim();
-                    replaceAction = (vid) => line.replace(currentWord, `{{${getterExpression(vid)}}}`);
-                    // line = line.replace(currentWord, `{{${getterExpression(vid)}}}`);
+                    replaceAction = (vid) => line.replace(currentWord, `{{${getterExpression(vid, IDName)}}}`);
                 }
 
                 const vid = cammelCase(await translate(currentWord));

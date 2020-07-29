@@ -42,6 +42,11 @@ module.exports = function (params) {
     if(typeof params.localTools !== 'string'){
         throw new Error(`请配置localTools参数，以提供i18n工具函数。如localTools配置为'~/localTools', 则生成代码import {formatMessage} from '~/localTools'`);
     }
+    if(params.idName!==null && params.idName!==undefined && !/^[_$a-zA-Z][a-zA-Z_$\d]*/.test(params.idName)){
+        throw new Error('idName变量只能包含数字、字母、_、$，且不能以数字开头');
+    }
+    const idName = params.idName || 'Labels';
+
     return {
         folders: params.folders || [],
         baseFolder: process.cwd(),
@@ -50,6 +55,7 @@ module.exports = function (params) {
         isFlow: params.isFlow === true,
         launchOptions,
         target: target,
+        idName,
         translateLanguages: translateLanguages,
         excludes: excludes,
         jsFunc: params.jsName || 'formatMessage',

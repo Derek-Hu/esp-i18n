@@ -38,6 +38,9 @@ i18n({
 
     // 指定保存修改后的代码路径，默认为覆盖源文件
     //srcCopyFolder: 'dist',
+
+    // 中文生成到Vue Data函数中，使用到属性名，命名遵循变量定义规则，默认值为'Lables'
+    // idName: 'Labels',
 })
 ```
 

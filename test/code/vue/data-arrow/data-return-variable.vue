@@ -11,6 +11,7 @@
 <script>
 const VueData = {
   Labels: 100,
+  i18n: 200,
 };
 export default {
   async mounted() {},

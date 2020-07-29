@@ -15,6 +15,7 @@ const { asyncForEach } = Utils;
 module.exports = async (params) => {
 
     const options = paramParser(params);
+    const { idName } = options;
 
     const translate = translateGenerator(options);
     const errorVueFiles = [];
@@ -41,7 +42,7 @@ module.exports = async (params) => {
         const shortPath = path.relative(process.cwd(), file);
         const isVueFile = /\.vue$/.test(file);
         const fileContent = fs.readFileSync(file, 'UTF8');
-        const { scripts: jsContent, placeholder, wrapper } = isVueFile ? await vue(translate, file, fileContent, errorVueFiles, suspectVueFiles) : { scripts: fileContent };
+        const { scripts: jsContent, placeholder, wrapper } = isVueFile ? await vue(translate, file, fileContent, errorVueFiles, suspectVueFiles, idName) : { scripts: fileContent };
         let source = jsContent;
 
         let entries;
@@ -117,7 +118,7 @@ module.exports = async (params) => {
 
     if (suspectVueFiles.length) {
         console.log();
-        console.warn(chalk.yellow(`原文件中存在${'Labels'}字符串，请检查并确认代码修改后，data函数中是否存在属性${'Labels'}覆盖的情况。`));
+        console.warn(chalk.yellow(`原文件中存在[${idName}]字符串，请检查并确认代码修改后，data函数中是否存在属性[${idName}]覆盖的情况。`));
         console.warn(chalk.yellow(`可能处理异常的Vue文件如下：`));
         console.warn(chalk.yellow(`${spaces}${suspectVueFiles.join(`\n${spaces}`)}`));
         console.log();
