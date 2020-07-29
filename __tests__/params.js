@@ -50,7 +50,6 @@ test('正确处理配置参数默认值', () => {
     };
     const options = paramParser(param);
 
-    // console.log(options);
     const { jsFunc, translateLanguages, isFlow, localToolsPath, folders, baseFolder, srcTarget, excludes, target } = options;
     expect(jsFunc).toBe('formatMessage');
     expect(translateLanguages.includes('en')).toBe(true);

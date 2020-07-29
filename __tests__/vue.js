@@ -22,7 +22,7 @@ const getTemplateContent = (source) => {
     if (Utils.isIdEmpty(source)) {
         return '';
     }
-    source = Utils.removeComment(source);
+    // source = Utils.removeComment(source);
     const matchs = source.match(/<template>((.*\n)*)<\/template>/);
     if (matchs && matchs[1]) {
         return matchs[1];

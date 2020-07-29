@@ -136,22 +136,22 @@ module.exports.asyncForEach = async function (array, callback) {
 }
 
 
-const removeComment = (source) => {
-    return source.replace(/<!--[^(<!--)]*-->/g, '');
-};
+// const removeComment = (source) => {
+//     return source.replace(/<!--[^(<!--)]*-->/g, '');
+// };
 const placeholder = '____VUE_PLACEHOLDER____';
 
 const getVueScriptContent = (source) => {
     if (isIdEmpty(source)) {
         return {};
     }
-    source = removeComment(source);
     const matchs = source.match(/(<script[^>]*>)((.*\n)*)(<\/script>)/);
     if (matchs) {
+        const scripts = matchs[2];
         return {
-            scripts: matchs[2],
+            scripts,
             placeholder,
-            wrapper: matchs[1] + placeholder + matchs[4],
+            wrapper: source.replace(scripts, placeholder),
         };
     }
     return {};
@@ -168,4 +168,4 @@ module.exports.getVueScriptContent = getVueScriptContent;
 
 module.exports.extractChinease = extractChinease;
 
-module.exports.removeComment = removeComment;
+// module.exports.removeComment = removeComment;

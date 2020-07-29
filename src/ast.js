@@ -4,6 +4,9 @@ const Utils = require('./utils');
 
 module.exports = (source, babelConfig, { localToolsPath, jsFunc }) => {
 
+    if (Utils.isIdEmpty(source) || source.trim()=== '') {
+        return null;
+    }
     const entries = [];
 
     const importedAttrs = [];
@@ -14,7 +17,7 @@ module.exports = (source, babelConfig, { localToolsPath, jsFunc }) => {
             if (['ImportDeclaration', 'JSXAttribute', 'JSXText'].includes(_node.parent.type)) {
                 return;
             }
-            if(_node.parent.type === 'ObjectProperty' && _node.parent.key === _node.node){ // Equal ObjectProperty
+            if (_node.parent.type === 'ObjectProperty' && _node.parent.key === _node.node) { // Equal ObjectProperty
                 return;
             }
             const node = _node.node;
@@ -70,13 +73,13 @@ module.exports = (source, babelConfig, { localToolsPath, jsFunc }) => {
             }
             importedAttrs.push(imported);
         },
-        ObjectProperty(_node){
+        ObjectProperty(_node) {
             const node = _node.node;
-            if(!node.key){
+            if (!node.key) {
                 return;
             }
             const type = node.key.type;
-            const value = type === 'StringLiteral'? node.key.value : node.key.name;
+            const value = type === 'StringLiteral' ? node.key.value : node.key.name;
             if (!Utils.isChineaseText(value)) {
                 return;
             }
