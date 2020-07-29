@@ -1,3 +1,4 @@
+const chalk = require('chalk');
 const Utils = require('./utils');
 const browserCode = require('./browser');
 const browserInstance = require('./browserInstance');
@@ -21,7 +22,8 @@ module.exports = (options) => {
             await page.waitForFunction(selector => !!document.querySelector(selector), {}, 'p.ordinary-output.target-output');
             return datas = await page.evaluate(browserCode, translationId);
         } catch (e) {
-            console.error(`翻译【${words}】至语言【${LanguageMapping[language]}】失败：`, e);
+            console.log();
+            console.log(chalk.red(`翻译【${words}】至语言【${LanguageMapping[language]}】失败：`, e));
             return {};
         }
     };
