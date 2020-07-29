@@ -24,25 +24,6 @@ const cammelCase = (id) => {
         return total;
     }, []).join('');
 }
-const removeComment = (source) => {
-    return source.replace(/<!--[^(<!--)]*-->/g, '');
-}
-
-const getVueScriptContent = (source) => {
-    if (Utils.isIdEmpty(source)) {
-        return '';
-    }
-    source = removeComment(source);
-    const matchs = source.match(/<script>((.*\n)*)<\/script>/);
-    if (matchs && matchs[1]) {
-        return matchs[1];
-    }
-    return '';
-}
-// const updateModifedScripts = (source, newSource) => {
-//     const scripts = getVueScriptContent(source);
-//     return source.replace(scripts, newSource);
-// }
 
 const parseVueData = (source, i18n) => {
     const PluginOptions = settings.babelConfig(false);
@@ -189,13 +170,6 @@ const parseVueData = (source, i18n) => {
     };
 }
 
-const extractChinease = (val) => {
-    if (Utils.isIdEmpty(val)) {
-        return val;
-    }
-    return val.match(/\s*([^>{"`'}<]*[\u4e00-\u9fa5]+[^<{"`'}>]*)\s*/g);
-}
-
 const getterExpression = (vid) => {
     if (/^[a-z_A-Z]+[\da-z_A-Z]*$/.test(vid)) {
         return `${IDName}.${vid}`;
@@ -239,7 +213,7 @@ module.exports = async (translate, filepath, content, errorVueFiles, suspectVueF
             newLines.push(line);
             return;
         }
-        const lineWords = extractChinease(line);
+        const lineWords = Utils.extractChinease(line);
         if (lineWords && lineWords.length) {
             await asyncForEach(lineWords, async matchWordInfo => {
                 // const vid = cammelCase(await translate(matchWordInfo));
@@ -289,7 +263,7 @@ module.exports = async (translate, filepath, content, errorVueFiles, suspectVueF
 
     const newSource = newLines.join('\n');
     if (Object.keys(labels).length) {
-        const scripts = getVueScriptContent(content);
+        const scripts = Utils.getVueScriptContent(content);
         const { source: modifiedScripts, suspect, isUpdated } = parseVueData(scripts, labels, IDName);
         // const modified = updateModifedScripts(newSource, modifiedScripts);
         const modified = newSource.replace(scripts, modifiedScripts);
@@ -304,10 +278,3 @@ module.exports = async (translate, filepath, content, errorVueFiles, suspectVueF
     }
     return content;
 }
-
-// 方法提供给测试代码使用
-module.exports.getVueScriptContent = getVueScriptContent;
-
-module.exports.extractChinease = extractChinease;
-
-module.exports.removeComment = removeComment;

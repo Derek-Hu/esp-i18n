@@ -23,7 +23,7 @@ const getTemplateContent = (source) => {
     if (Utils.isIdEmpty(source)) {
         return '';
     }
-    source = vue.removeComment(source);
+    source = Utils.removeComment(source);
     const matchs = source.match(/<template>((.*\n)*)<\/template>/);
     if (matchs && matchs[1]) {
         return matchs[1];
@@ -35,7 +35,7 @@ const getTemplateContent = (source) => {
 const getSourceTemplateCode = (source) => {
     const code = getTemplateContent(source);
     const chinas = code.split('\n').reduce((all, line) => {
-        const matches = vue.extractChinease(line);
+        const matches = Utils.extractChinease(line);
         if (matches && matches.length) {
             matches.forEach(m => {
                 all[m] = true;
@@ -46,7 +46,7 @@ const getSourceTemplateCode = (source) => {
     return Object.keys(chinas);
 }
 const getOriginalKeys = (source) => {
-    const code = vue.getVueScriptContent(source);
+    const code = Utils.getVueScriptContent(source);
     const astTree = babelParser.parse(code, babelConfig);
 
     let hasDataMethod = false;

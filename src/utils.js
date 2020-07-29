@@ -33,9 +33,12 @@ function getJSFileList(root) {
 module.exports.isChineaseText = function (value) {
     return value && /[\u4e00-\u9fa5？（）。]/.test(value);
 }
-module.exports.isIdEmpty = function (id) {
+
+const isIdEmpty = function (id) {
     return (id === null || id === undefined);
 }
+
+module.exports.isIdEmpty = isIdEmpty;
 module.exports.getJSFileList = getJSFileList;
 
 // 写文件
@@ -47,7 +50,7 @@ module.exports.writeSync = function (outputFilePath, content) {
 module.exports.getUniqueId = (original, value, zhLocaleData, duplicateKeys) => {
     const id = original.replace(/\-\d+$/, '');
     let validId = id;
-    
+
     while ((validId in zhLocaleData) && (zhLocaleData[validId] !== value)) {
         if (!duplicateKeys[id]) {
             duplicateKeys[id] = 1;
@@ -86,7 +89,7 @@ module.exports.getUniqueImportId = (id, all) => {
 }
 
 const getProcessFiles = (folders, excludes) => {
-    if(!excludes){
+    if (!excludes) {
         excludes = [];
     }
     return folders.reduce((files, folder) => {
@@ -116,7 +119,7 @@ module.exports.loadLocales = function (languages, baseFolder) {
             const fileContent = fs.readFileSync(path.resolve(baseFolder, `${language}.js`), 'UTF8');
 
             resources[language] = eval(`${fileContent.replace(settings.Header, 'false? null: ')}`);
-        } catch (e) { 
+        } catch (e) {
         }
 
         if (!resources[language]) {
@@ -131,3 +134,33 @@ module.exports.asyncForEach = async function (array, callback) {
         await callback(array[index], index, array);
     }
 }
+
+
+const removeComment = (source) => {
+    return source.replace(/<!--[^(<!--)]*-->/g, '');
+};
+
+const getVueScriptContent = (source) => {
+    if (isIdEmpty(source)) {
+        return '';
+    }
+    source = removeComment(source);
+    const matchs = source.match(/<script>((.*\n)*)<\/script>/);
+    if (matchs && matchs[1]) {
+        return matchs[1];
+    }
+    return '';
+};
+
+const extractChinease = (val) => {
+    if (isIdEmpty(val)) {
+        return val;
+    }
+    return val.match(/\s*([^>{"`'}<]*[\u4e00-\u9fa5]+[^<{"`'}>]*)\s*/g);
+}
+
+module.exports.getVueScriptContent = getVueScriptContent;
+
+module.exports.extractChinease = extractChinease;
+
+module.exports.removeComment = removeComment;
