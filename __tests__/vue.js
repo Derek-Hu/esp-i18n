@@ -5,6 +5,7 @@ import vue from '~/vue';
 import i18n from '~/main';
 import settings from '~/settings';
 import traverse from "@babel/traverse";
+import Utils from '~/utils';
 
 const babelParser = require("@babel/parser");
 const encode = 'UTF8';
@@ -18,8 +19,21 @@ const parseLocalJson = (source) => {
 
 jest.setTimeout(30000);
 
+const getTemplateContent = (source) => {
+    if (Utils.isIdEmpty(source)) {
+        return '';
+    }
+    source = vue.removeComment(source);
+    const matchs = source.match(/<template>((.*\n)*)<\/template>/);
+    if (matchs && matchs[1]) {
+        return matchs[1];
+    }
+    return '';
+
+}
+
 const getSourceTemplateCode = (source) => {
-    const code = vue.getTemplateContent(source);
+    const code = getTemplateContent(source);
     const chinas = code.split('\n').reduce((all, line) => {
         const matches = vue.extractChinease(line);
         if (matches && matches.length) {

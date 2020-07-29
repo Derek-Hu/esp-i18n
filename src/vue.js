@@ -27,18 +27,7 @@ const cammelCase = (id) => {
 const removeComment = (source) => {
     return source.replace(/<!--[^(<!--)]*-->/g, '');
 }
-const getTemplateContent = (source) => {
-    if (Utils.isIdEmpty(source)) {
-        return '';
-    }
-    source = removeComment(source);
-    const matchs = source.match(/<template>((.*\n)*)<\/template>/);
-    if (matchs && matchs[1]) {
-        return matchs[1];
-    }
-    return '';
 
-}
 const getVueScriptContent = (source) => {
     if (Utils.isIdEmpty(source)) {
         return '';
@@ -50,10 +39,10 @@ const getVueScriptContent = (source) => {
     }
     return '';
 }
-const updateModifedScripts = (source, newSource) => {
-    const scripts = getVueScriptContent(source);
-    return source.replace(scripts, newSource);
-}
+// const updateModifedScripts = (source, newSource) => {
+//     const scripts = getVueScriptContent(source);
+//     return source.replace(scripts, newSource);
+// }
 
 const parseVueData = (source, i18n) => {
     const PluginOptions = settings.babelConfig(false);
@@ -300,9 +289,10 @@ module.exports = async (translate, filepath, content, errorVueFiles, suspectVueF
 
     const newSource = newLines.join('\n');
     if (Object.keys(labels).length) {
-        const scripts = getVueScriptContent(content, filepath);
+        const scripts = getVueScriptContent(content);
         const { source: modifiedScripts, suspect, isUpdated } = parseVueData(scripts, labels, IDName);
-        const modified = updateModifedScripts(newSource, modifiedScripts);
+        // const modified = updateModifedScripts(newSource, modifiedScripts);
+        const modified = newSource.replace(scripts, modifiedScripts);
         if(suspect){
             suspectVueFiles.push(path.relative(process.cwd(), filepath));
         }
@@ -315,8 +305,9 @@ module.exports = async (translate, filepath, content, errorVueFiles, suspectVueF
     return content;
 }
 
+// 方法提供给测试代码使用
 module.exports.getVueScriptContent = getVueScriptContent;
 
 module.exports.extractChinease = extractChinease;
 
-module.exports.getTemplateContent = getTemplateContent;
+module.exports.removeComment = removeComment;
