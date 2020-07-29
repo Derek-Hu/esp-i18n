@@ -45,7 +45,7 @@ module.exports = function (params) {
     if(params.idName!==null && params.idName!==undefined && !/^[_$a-zA-Z][a-zA-Z_$\d]*/.test(params.idName)){
         throw new Error('idName变量只能包含数字、字母、_、$，且不能以数字开头');
     }
-    const idName = params.idName || 'Labels';
+    const idName = params.idName || 'i18n';
 
     return {
         folders: params.folders || [],

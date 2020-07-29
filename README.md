@@ -2,9 +2,92 @@
 
 使用Babel进行语法分析，并使用百度翻译自动生成国际化id属性；
 
-支持ES6、TS等语法，支持React、Angular、Vue等JS代码。
+支持ES6、TS等语法，支持React、Angular(html不会自动翻译)、Vue等JS代码。
 
-Example: https://github.com/Derek-Hu/esp-i18n/tree/master/examples/i18n-extract
+### React
+源代码: 
+```js
+import React from 'react';
+import ErrorPage from '~/components/error-page';
+
+export default class ErrorPage403 extends React.Component {
+  render() {
+    return <ErrorPage title="抱歉你没有菜单权限">
+        你好
+    </ErrorPage>;
+  }
+}
+```
+
+自动修改后: 
+```js
+import { formatMessage } from '~/localTools';
+import React from 'react';
+import ErrorPage from '~/components/error-page';
+
+export default class ErrorPage403 extends React.Component {
+  render() {
+    return <ErrorPage title={formatMessage({id: 'be-sorry-limits-of-authority'})}>
+        { formatMessage({id: 'hello'}) }
+    </ErrorPage>;
+  }
+}
+```
+### Vue
+源代码: 
+```html
+<template>
+  <section class="guide-wrap-section">
+    <p>抱歉你没有菜单权限</p>
+    <input placeholder="你好" />
+  </section>
+</template>
+
+<script>
+export default {
+  async mounted() {},
+  methods: {
+    goToSupplierEnter() {
+      this.$router.push({
+        name: 'companyEnter',
+      });
+    },
+  },
+};
+</script>
+```
+
+自动修改后: 
+```html
+<template>
+  <section class="guide-wrap-section">
+    <p>{{i18n.beSorryLimitsOfAuthority}}</p>
+    <input :placeholder="i18n.hello" />
+  </section>
+</template>
+
+<script>
+export default {
+  async mounted() {},
+  methods: {
+    goToSupplierEnter() {
+      this.$router.push({
+        name: 'companyEnter',
+      });
+    },
+    data(){
+      return {
+        i18n: {
+          beSorryLimitsOfAuthority: formatMessage({id: 'be-sorry-limits-of-authority'}),
+          hello: formatMessage({id: 'hello'}),
+        }
+      }
+    }
+  },
+};
+</script>
+```
+### API
 
 ```js
 const i18n = require('esp-i18n');
@@ -40,47 +123,11 @@ i18n({
     //srcCopyFolder: 'dist',
 
     // 中文生成到Vue Data函数中，使用到属性名，命名遵循变量定义规则，默认值为'Lables'
-    // idName: 'Labels',
+    // idName: 'i18n',
 })
 ```
 
 支持中文翻译的语言列表见：[https://github.com/Derek-Hu/esp-i18n/blob/master/src/languages.js](https://github.com/Derek-Hu/esp-i18n/blob/master/src/languages.js)
-
-源代码: 
-```js
-import React from 'react';
-import ErrorPage from '~/components/error-page';
-import Controller from 'meta.macro';
-
-@Controller('/403', {
-  title: '访问拒绝',
-})
-export default class ErrorPage403 extends React.Component {
-  render() {
-    return <ErrorPage title="抱歉你没有菜单权限">
-    </ErrorPage>;
-  }
-}
-```
-
-自动生成代码: 
-```js
-import { formatMessage } from '~/localTools';
-import React from 'react';
-import ErrorPage from '~/components/error-page';
-import Controller from 'meta.macro';
-
-@Controller('/403', {
-  title: formatMessage({id: 'access-denied'}),
-})
-export default class ErrorPage403 extends React.Component {
-  render() {
-    return <ErrorPage title={formatMessage({id: 'be-sorry-limits-of-authority'})}>
-    </ErrorPage>;
-  }
-}
-```
-
 
 ### 单元测试
 单元测试运行生成源代码至`dist`文件夹，并生成测试覆盖率报告至文件夹`converage`
