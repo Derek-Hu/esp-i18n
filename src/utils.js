@@ -38,6 +38,10 @@ const isIdEmpty = function (id) {
     return (id === null || id === undefined);
 }
 
+const isJSEmpty = (source) => {
+    return isIdEmpty(source) || source.trim() === '';
+};
+
 module.exports.isIdEmpty = isIdEmpty;
 module.exports.getJSFileList = getJSFileList;
 
@@ -141,8 +145,9 @@ module.exports.asyncForEach = async function (array, callback) {
 // };
 const placeholder = '____VUE_PLACEHOLDER____';
 
+// source可能已更新，比如template
 const getVueScriptContent = (source) => {
-    if (isIdEmpty(source)) {
+    if (isJSEmpty(source)) {
         return {};
     }
     const matchs = source.match(/(<script[^>]*>)((.*\n)*)(<\/script>)/);
@@ -154,7 +159,11 @@ const getVueScriptContent = (source) => {
             wrapper: source.replace(scripts, placeholder),
         };
     }
-    return {};
+    return {
+        scripts: '',
+        placeholder: '',
+        wrapper: source,
+    };
 };
 
 const extractChinease = (val) => {
@@ -168,4 +177,4 @@ module.exports.getVueScriptContent = getVueScriptContent;
 
 module.exports.extractChinease = extractChinease;
 
-// module.exports.removeComment = removeComment;
+module.exports.isJSEmpty = isJSEmpty;

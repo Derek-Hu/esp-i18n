@@ -4,7 +4,7 @@ const Utils = require('./utils');
 
 module.exports = (source, babelConfig, { localToolsPath, jsFunc }) => {
 
-    if (Utils.isIdEmpty(source) || source.trim()=== '') {
+    if (Utils.isJSEmpty(source)) {
         return null;
     }
     const entries = [];

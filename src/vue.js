@@ -267,7 +267,8 @@ module.exports = async (translate, filepath, content, errorVueFiles, suspectVueF
         const structure = Utils.getVueScriptContent(newSource);
         const { scripts } = structure;
         const shortPath = path.relative(process.cwd(), filepath);
-        if (!Utils.isIdEmpty(scripts)) {
+        let syntaxError = false;
+        if (!Utils.isJSEmpty(scripts)) {
             try {
                 const { source: modifiedScripts, suspect, isUpdated } = parseVueData(scripts, labels, IDName);
                 if (isUpdated) {
@@ -280,11 +281,12 @@ module.exports = async (translate, filepath, content, errorVueFiles, suspectVueF
                     }
                 }
             } catch (e) {
-                // console.log();
-                // console.error(chalk.red(e));
+                syntaxError = true;
             }
         }
-        errorVueFiles.push(shortPath);
+        if(syntaxError){
+            errorVueFiles.push(shortPath);
+        }
         const addLines = `const ${IDName} = {\n` + Object.keys(labels).map(w => `\t${w}:'${labels[w]}'`).join(',\n') + '\n};\n';
         return {
             ...structure,

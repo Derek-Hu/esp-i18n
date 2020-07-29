@@ -5,6 +5,7 @@
 </template>
 
 <script>
+const a =;
 const comp = {
   async mounted() {},
   data() {},

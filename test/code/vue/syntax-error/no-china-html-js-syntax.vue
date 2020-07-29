@@ -1,10 +1,11 @@
 <template>
   <section class="guide-wrap-section">
-    <p>全新字符串，不存在locale文件中</p>
+    <p>hello</p>
   </section>
 </template>
 
 <script>
+const a =;
 const comp = {
   async mounted() {},
   data() {},

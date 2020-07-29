@@ -226,5 +226,6 @@ export default {
   "free-chinese": "Free Chinese",
   "state": "state",
   "well": "\n            well\n        ",
-  "well-1": "well"
+  "well-1": "well",
+  "brand-new-alphabetic-string-non-existent-document": "A new string, which does not exist in the locale file"
 }

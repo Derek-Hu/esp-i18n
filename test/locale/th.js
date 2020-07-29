@@ -226,5 +226,6 @@ export default {
   "free-chinese": "ฟรีภาษาจีน",
   "state": "สภาพ",
   "well": "\n            ดี\n        ",
-  "well-1": "ดี"
+  "well-1": "ดี",
+  "brand-new-alphabetic-string-non-existent-document": "สตริงใหม่ทั้งหมดไม่ได้อยู่ในแฟ้มท้องถิ่น"
 }

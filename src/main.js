@@ -19,6 +19,7 @@ module.exports = async (params) => {
     const translate = translateGenerator(options);
     const errorVueFiles = [];
     const suspectVueFiles = [];
+    const halfVueFiles = [];
     const babelConfig = settings.babelConfig(options.isFlow);
 
     const fileNeedProcessing = Utils.getProcessFiles(options.folders, options.excludes);
@@ -37,6 +38,7 @@ module.exports = async (params) => {
         const shortFile = path.relative(process.cwd(), file);
         progressBar.tick({ fileIdx: fileIdx, msg: `正在处理文件：${shortFile}` });
 
+        const shortPath = path.relative(process.cwd(), file);
         const isVueFile = /\.vue$/.test(file);
         const fileContent = fs.readFileSync(file, 'UTF8');
         const { scripts: jsContent, placeholder, wrapper } = isVueFile ? await vue(translate, file, fileContent, errorVueFiles, suspectVueFiles) : { scripts: fileContent };
@@ -44,22 +46,33 @@ module.exports = async (params) => {
 
         let entries;
         let finalFuncName;
+        let syntaxError = false;
         try {
             const astData = ast(source, babelConfig, options);
-            if(astData){
+            if (astData) {
                 entries = astData.entries;
                 finalFuncName = astData.finalFuncName;
             }
         } catch (e) {
+            syntaxError = true;
+            if(!errorVueFiles.includes(shortPath)){
+                errorVueFiles.push(shortPath);
+            }
             console.log();
             console.error(chalk.red(`解析文件失败：${file}`));
-            console.error(e);
             console.error(chalk.red(jsContent));
         }
 
-        // progressBar.tick({ fileIdx, msg: `处理文件完成：${shortFile}` });
-
         if (!entries || !entries.length) {
+            // Template有中文，JS中无中文，且JS代码AST正确解析
+            if (!syntaxError && wrapper) {
+                const newSource = wrapper.replace(placeholder, jsContent);
+                const isUpdate = newSource !== fileContent;
+                if (isUpdate) {
+                    halfVueFiles.push(shortPath);
+                    Utils.writeSync(path.resolve(options.srcTarget, path.relative(options.baseFolder, file)), newSource);
+                }
+            }
             return;
         }
 
@@ -97,8 +110,8 @@ module.exports = async (params) => {
     const spaces = '  ';
     if (errorVueFiles.length) {
         console.log();
-        console.warn(chalk.yellow('未能正确处理的Vue文件如下：'));
-        console.warn(chalk.yellow(`${spaces}${errorVueFiles.join(`\n${spaces}`)}`));
+        console.error(chalk.red('以下文件存在语法错误，未能正确解析：'));
+        console.error(chalk.red(`${spaces}${errorVueFiles.join(`\n${spaces}`)}`));
         console.log();
     }
 
@@ -107,6 +120,14 @@ module.exports = async (params) => {
         console.warn(chalk.yellow(`原文件中存在${'Labels'}字符串，请检查并确认代码修改后，data函数中是否存在属性${'Labels'}覆盖的情况。`));
         console.warn(chalk.yellow(`可能处理异常的Vue文件如下：`));
         console.warn(chalk.yellow(`${spaces}${suspectVueFiles.join(`\n${spaces}`)}`));
+        console.log();
+    }
+
+    if (halfVueFiles.length) {
+        console.log();
+        console.error(chalk.red(`原文件中<template>中存在中文，文件已更新，请手动合并相关代码。`));
+        console.error(chalk.red(`需手动解决冲突的Vue文件如下：`));
+        console.error(chalk.red(`${spaces}${halfVueFiles.join(`\n${spaces}`)}`));
         console.log();
     }
 

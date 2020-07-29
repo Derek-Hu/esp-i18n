@@ -226,5 +226,6 @@ export default {
   "free-chinese": "自在中文出现",
   "state": "状态",
   "well": "\n            好的\n        ",
-  "well-1": "好的"
+  "well-1": "好的",
+  "brand-new-alphabetic-string-non-existent-document": "全新字符串，不存在locale文件中"
 }
