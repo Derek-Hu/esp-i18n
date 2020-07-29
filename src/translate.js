@@ -40,18 +40,18 @@ module.exports = (options) => {
         const fullId = keys.find(key => locales[key] === value);
         const trimedId = keys.find(key => locales[key] === trimedValue);
         const trimedsEqualId = keys.find(key => {
-            return !Utils.isIdEmpty(locales[key]) ? `${locales[key]}`.trim() === trimedValue : false;
+            return !Utils.isEmpty(locales[key]) ? `${locales[key]}`.trim() === trimedValue : false;
         });
         
         const idTranslationMap = {
-            id: Utils.isIdEmpty(fullId) ? null : toLocales[fullId],
-            trim: Utils.isIdEmpty(trimedId) ? null : toLocales[trimedId],
-            equal: Utils.isIdEmpty(trimedsEqualId) ? null : toLocales[trimedsEqualId],
+            id: Utils.isEmpty(fullId) ? null : toLocales[fullId],
+            trim: Utils.isEmpty(trimedId) ? null : toLocales[trimedId],
+            equal: Utils.isEmpty(trimedsEqualId) ? null : toLocales[trimedsEqualId],
         };
         const selectedType = Object.keys(idTranslationMap).find(type => {
-            return !Utils.isIdEmpty(idTranslationMap[type]);
+            return !Utils.isEmpty(idTranslationMap[type]);
         });
-        // const selectedType = !Utils.isIdEmpty(idTranslationMap.id) ? 'id' : (!Utils.isIdEmpty(idTranslationMap.trim) ? 'trim' : (!Utils.isIdEmpty(idTranslationMap.equal) ? 'equal' : null));
+        // const selectedType = !Utils.isEmpty(idTranslationMap.id) ? 'id' : (!Utils.isEmpty(idTranslationMap.trim) ? 'trim' : (!Utils.isEmpty(idTranslationMap.equal) ? 'equal' : null));
 
         let finalTranslation = null;
         let browserId = null;
@@ -66,7 +66,7 @@ module.exports = (options) => {
 
             if (!selectedType) {
                 const { id, translation } = await getTranslation(trimedValue, language, fromLanguage);
-                if (!Utils.isIdEmpty(translation)) {
+                if (!Utils.isEmpty(translation)) {
                     browserId = id;
                     trimedTranslation = translation;
                 }
@@ -80,13 +80,13 @@ module.exports = (options) => {
             finalTranslation = template.replace(placeholder, trimedTranslation);
         }
 
-        if (Utils.isIdEmpty(finalTranslation)) {
+        if (Utils.isEmpty(finalTranslation)) {
             return {};
         }
 
         const chinaWord = language === 'zh' ? finalTranslation : value;
         let finalId = null;
-        if (!Utils.isIdEmpty(fixedId)) {
+        if (!Utils.isEmpty(fixedId)) {
             finalId = fixedId;
         } else if (selectedType) {
             if (selectedType === 'id') {
@@ -95,7 +95,7 @@ module.exports = (options) => {
                 finalId = Utils.getUniqueId(trimedId || trimedsEqualId, chinaWord, zhLocales, duplicateKeys);
             }
         } else {
-            if (!Utils.isIdEmpty(browserId)) {
+            if (!Utils.isEmpty(browserId)) {
                 finalId = Utils.getUniqueId(browserId, chinaWord, zhLocales, duplicateKeys);;
             }
         }
@@ -126,7 +126,7 @@ module.exports = (options) => {
                 await asyncForEach(codeKeys, async codeKey => {
                     if (!(codeKey in TranslationContainer['zh'])) {
                         const { translation } = await remoteTranslate(TranslationContainer[code][codeKey], 'zh', codeKey, code);
-                        if (!Utils.isIdEmpty(translation)) {
+                        if (!Utils.isEmpty(translation)) {
                             TranslationContainer['zh'][codeKey] = translation;
                         }
                     }
@@ -139,7 +139,7 @@ module.exports = (options) => {
                 await asyncForEach(zhKeys, async zhKey => {
                     if (!(zhKey in TranslationContainer[code])) {
                         const { translation } = await remoteTranslate(TranslationContainer['zh'][zhKey], code, zhKey);
-                        if (!Utils.isIdEmpty(translation)) {
+                        if (!Utils.isEmpty(translation)) {
                             TranslationContainer[code][zhKey] = translation;
                         }
                     }
@@ -149,17 +149,17 @@ module.exports = (options) => {
             duplicateKeys = {};
 
         }
-        if (Utils.isIdEmpty(value)) {
+        if (Utils.isEmpty(value)) {
             return value;
         }
 
         let fixedId = null;
         await asyncForEach(sortted, async code => {
             const { id, translation } = await remoteTranslate(value, code, fixedId);
-            if (Utils.isIdEmpty(id) || Utils.isIdEmpty(translation)) {
+            if (Utils.isEmpty(id) || Utils.isEmpty(translation)) {
                 return null;
             }
-            if (Utils.isIdEmpty(fixedId)) {
+            if (Utils.isEmpty(fixedId)) {
                 fixedId = id;
                 TranslationContainer['zh'][fixedId] = value;
             }

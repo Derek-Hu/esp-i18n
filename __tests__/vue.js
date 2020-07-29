@@ -23,7 +23,7 @@ const removeComment = (source) => {
 };
 
 const getTemplateContent = (source) => {
-    if (Utils.isIdEmpty(source)) {
+    if (Utils.isEmpty(source)) {
         return '';
     }
     source = removeComment(source);

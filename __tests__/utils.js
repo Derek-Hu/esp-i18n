@@ -54,12 +54,12 @@ test('识别中文', () => {
 });
 
 test('ID为空', () => {
-    expect(Utils.isIdEmpty(undefined)).toBe(true);
-    expect(Utils.isIdEmpty(null)).toBe(true);
-    expect(Utils.isIdEmpty('')).toBe(false);
-    expect(Utils.isIdEmpty(0)).toBe(false);
-    expect(Utils.isIdEmpty(1)).toBe(false);
-    expect(Utils.isIdEmpty(false)).toBe(false);
+    expect(Utils.isEmpty(undefined)).toBe(true);
+    expect(Utils.isEmpty(null)).toBe(true);
+    expect(Utils.isEmpty('')).toBe(false);
+    expect(Utils.isEmpty(0)).toBe(false);
+    expect(Utils.isEmpty(1)).toBe(false);
+    expect(Utils.isEmpty(false)).toBe(false);
 });
 
 test('locale生成ID唯一化', () => {

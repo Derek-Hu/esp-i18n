@@ -77,13 +77,13 @@ module.exports = async (params) => {
         }
 
         await asyncForEach(entries, async entry => {
-            if (Utils.isIdEmpty(entry.value)) {
+            if (Utils.isEmpty(entry.value)) {
                 // Add [import from ''] Statement
                 source = source.slice(0, entry.start) + (isVueFile? '\n': '') +entry.getReplacement(null, finalFuncName) + source.slice(entry.end);
                 return;
             }
             const id = await translate(entry.value);
-            const isSucess = !Utils.isIdEmpty(id);
+            const isSucess = !Utils.isEmpty(id);
 
             if (isSucess) {
                 source = source.slice(0, entry.start) + entry.getReplacement(id, finalFuncName) + source.slice(entry.end);

@@ -34,15 +34,15 @@ module.exports.isChineaseText = function (value) {
     return value && /[\u4e00-\u9fa5？（）。]/.test(value);
 }
 
-const isIdEmpty = function (id) {
+const isEmpty = function (id) {
     return (id === null || id === undefined);
 }
 
 const isJSEmpty = (source) => {
-    return isIdEmpty(source) || source.trim() === '';
+    return isEmpty(source) || source.trim() === '';
 };
 
-module.exports.isIdEmpty = isIdEmpty;
+module.exports.isEmpty = isEmpty;
 module.exports.getJSFileList = getJSFileList;
 
 // 写文件
@@ -170,7 +170,7 @@ const getVueScriptContent = (source) => {
 };
 
 const extractChinease = (val) => {
-    if (isIdEmpty(val)) {
+    if (isEmpty(val)) {
         return val;
     }
     return val.match(/\s*([^>{"`'}<]*[\u4e00-\u9fa5]+[^<{"`'}>]*)\s*/g);

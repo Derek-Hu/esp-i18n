@@ -9,7 +9,7 @@ const { asyncForEach } = Utils;
 const IDName = 'Labels';
 
 const cammelCase = (id) => {
-    if (Utils.isIdEmpty(id)) {
+    if (Utils.isEmpty(id)) {
         return id;
     }
     const parts = id.split('-');
@@ -218,7 +218,7 @@ module.exports = async (translate, filepath, content, errorVueFiles, suspectVueF
         if (lineWords && lineWords.length) {
             await asyncForEach(lineWords, async matchWordInfo => {
                 // const vid = cammelCase(await translate(matchWordInfo));
-                // if (Utils.isIdEmpty(vid)) {
+                // if (Utils.isEmpty(vid)) {
                 //     return;
                 // }
                 const transformedWord = matchWordInfo.split('').map(function (k) {
@@ -252,7 +252,7 @@ module.exports = async (translate, filepath, content, errorVueFiles, suspectVueF
                 }
 
                 const vid = cammelCase(await translate(currentWord));
-                if (Utils.isIdEmpty(vid)) {
+                if (Utils.isEmpty(vid)) {
                     return;
                 }
                 line = replaceAction(vid);
