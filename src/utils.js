@@ -115,7 +115,12 @@ module.exports.getProcessFiles = getProcessFiles;
 const jsonCompatiable = (filepath) => {
     try {
         const fileContent = fs.readFileSync(filepath, 'UTF8');
-        return eval(`${fileContent.replace(settings.Header, 'false? null: ')}`);
+        const value = eval(`${fileContent.replace(settings.Header, 'false? null: ')}`);
+
+        if (Object.prototype.toString.call(value) === '[object Object]') {
+            return value;
+        }
+        return {};
     } catch (e) {
         return {};
     }
