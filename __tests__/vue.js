@@ -18,11 +18,15 @@ const parseLocalJson = (source) => {
 
 jest.setTimeout(30000);
 
+const removeComment = (source) => {
+    return source.replace(/<!--[^(<!--)]*-->/g, '');
+};
+
 const getTemplateContent = (source) => {
     if (Utils.isIdEmpty(source)) {
         return '';
     }
-    // source = Utils.removeComment(source);
+    source = removeComment(source);
     const matchs = source.match(/<template>((.*\n)*)<\/template>/);
     if (matchs && matchs[1]) {
         return matchs[1];
@@ -137,6 +141,18 @@ describe('解析百度翻译页面结果', () => {
         expect(after).toBe(correct);
     });
 
+    it('JS语言报错时，给提示', async () => {
+        [
+            'syntax-error/no-china-html-js-syntax.vue',
+            'syntax-error/no-china-script-and-js-syntax-error.vue',
+            'syntax-error/syntax-error.vue',
+            'syntax-error/syntax-export.vue'
+        ].forEach(sub => {
+            const isExists = fs.existsSync(path.resolve(baseFolder, filePath, sub));
+            expect(isExists).toBe(false);
+        })
+    });
+
     it('保留Template内部注释', async () => {
         const after = fs.readFileSync(path.resolve(baseFolder, filePath, 'data-empty.vue'), encode);
         expect(/<!--/.test(after)).toBe(true);
@@ -148,9 +164,14 @@ describe('解析百度翻译页面结果', () => {
         expect(isExists).toBe(false);
     });
 
-    it('无Script有中文时', async () => {
-        const isExists = fs.existsSync(path.resolve(baseFolder, filePath, 'empty-script.vue'));
-        expect(isExists).toBe(false);
+    it('只有template,且template包含中文', async () => {
+        const after = fs.readFileSync(path.resolve(baseFolder, filePath, 'empty-script.vue'), encode);
+        expect(after.indexOf('const Labels = {') === 0).toBe(true);
+    });
+
+    it('template包含中文，script不包含中文', async () => {
+        const after = fs.readFileSync(path.resolve(baseFolder, filePath, 'data-no-export.vue'), encode);
+        expect(after.indexOf('const Labels = {') === 0).toBe(true);
     });
 
     it('无Template时，无中文时', async () => {

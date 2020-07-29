@@ -79,7 +79,7 @@ module.exports = async (params) => {
         await asyncForEach(entries, async entry => {
             if (Utils.isIdEmpty(entry.value)) {
                 // Add [import from ''] Statement
-                source = source.slice(0, entry.start) + entry.getReplacement(null, finalFuncName) + source.slice(entry.end);
+                source = source.slice(0, entry.start) + (isVueFile? '\n': '') +entry.getReplacement(null, finalFuncName) + source.slice(entry.end);
                 return;
             }
             const id = await translate(entry.value);
@@ -139,8 +139,9 @@ module.exports = async (params) => {
     } else {
         const { translateLanguages } = options;
         const sizes = translateLanguages.map(language => {
-            const source = fs.readFileSync(path.resolve(options.target, `${language}.js`), 'UTF8');
-            return Object.keys(JSON.parse(source.replace(settings.Header, ''))).length;
+            const localeJson = Utils.jsonCompatiable(path.resolve(options.target, `${language}.js`));
+            // const source = fs.readFileSync(, 'UTF8');
+            return Object.keys(localeJson).length;
         });
         const isAllKeysEquals = sizes.every((size) => {
             return size === sizes[0];

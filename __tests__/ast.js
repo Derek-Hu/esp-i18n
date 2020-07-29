@@ -6,7 +6,8 @@ import parseParam from '~/param';
 const toolPath = '~/locale-tools';
 const encode = 'UTF8';
 const parseLocalJson = (source) => {
-    return JSON.parse(source.replace('export default ', ''));
+    return eval(`${source.replace('export default ', 'false? null: ')}`);
+    // return JSON.parse(source.replace('export default ', ''));
 }
 const astPath = 'test/code/ast';
 jest.setTimeout(30000);

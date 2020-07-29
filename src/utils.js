@@ -112,6 +112,15 @@ const getProcessFiles = (folders, excludes) => {
 };
 module.exports.getProcessFiles = getProcessFiles;
 
+const jsonCompatiable = (filepath) => {
+    try {
+        const fileContent = fs.readFileSync(filepath, 'UTF8');
+        return eval(`${fileContent.replace(settings.Header, 'false? null: ')}`);
+    } catch (e) {
+        return {};
+    }
+}
+module.exports.jsonCompatiable = jsonCompatiable;
 module.exports.loadLocales = function (languages, baseFolder) {
     const resources = {};
 
@@ -119,13 +128,7 @@ module.exports.loadLocales = function (languages, baseFolder) {
         return resources;
     }
     languages.forEach(language => {
-        try {
-            const fileContent = fs.readFileSync(path.resolve(baseFolder, `${language}.js`), 'UTF8');
-
-            resources[language] = eval(`${fileContent.replace(settings.Header, 'false? null: ')}`);
-        } catch (e) {
-        }
-
+        resources[language] = jsonCompatiable(path.resolve(baseFolder, `${language}.js`));
         if (!resources[language]) {
             resources[language] = {};
         }
