@@ -23,7 +23,8 @@ module.exports = (options) => {
             return datas = await page.evaluate(browserCode, translationId);
         } catch (e) {
             console.log();
-            console.log(chalk.red(`翻译【${words}】至语言【${LanguageMapping[language]}】失败：`, e));
+            console.log(chalk.red(`翻译【${words}】至语言【${LanguageMapping[language]}】失败：`));
+            console.log(chalk.red(e));
             return {};
         }
     };

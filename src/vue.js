@@ -280,6 +280,7 @@ module.exports = async (translate, filepath, content, errorVueFiles, suspectVueF
                     }
                 }
             } catch (e) {
+                console.log();
                 console.log(chalk.red(e));
             }
         }

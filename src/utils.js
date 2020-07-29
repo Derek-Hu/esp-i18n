@@ -146,7 +146,7 @@ const getVueScriptContent = (source) => {
         return {};
     }
     source = removeComment(source);
-    const matchs = source.match(/^(\s*<script[^>]*>)((.*\n*)*)(<\/script>)/);
+    const matchs = source.match(/(<script[^>]*>)((.*\n)*)(<\/script>)/);
     if (matchs) {
         return {
             scripts: matchs[2],

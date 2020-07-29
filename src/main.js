@@ -79,17 +79,19 @@ module.exports = async (params) => {
             Utils.writeSync(path.resolve(options.srcTarget, path.relative(options.baseFolder, file)), source);
         } catch (e) {
             console.log();
-            console.log(chalk.red(`解析文件失败：${file}`, e));
+            console.log(chalk.red(`解析文件失败：${file}`));
+            console.log(chalk.red(e));
             console.log(chalk.red(jsContent));
         }
         progressBar.tick({ fileIdx, msg: `处理文件完成：${shortFile}` });
     });
     progressBar.tick({ fileIdx, msg: '' });
 
+    const spaces = '  ';
     if (errorVueFiles.length) {
         console.log();
         console.log(chalk.yellow('未能正确处理的Vue文件如下：'));
-        console.log(chalk.white(errorVueFiles.join('\n')));
+        console.log(chalk.yellow(`${spaces}${errorVueFiles.join(`\n${spaces}`)}`));
         console.log();
     }
 
@@ -97,14 +99,14 @@ module.exports = async (params) => {
         console.log();
         console.log(chalk.yellow(`原文件中存在${'Labels'}字符串，请检查并确认代码修改后，data函数中是否存在属性${'Labels'}覆盖的情况。`));
         console.log(chalk.yellow(`可能处理异常的Vue文件如下：`));
-        console.log(chalk.yellow(suspectVueFiles.join('\n')));
+        console.log(chalk.yellow(`${spaces}${suspectVueFiles.join(`\n${spaces}`)}`));
         console.log();
     }
 
     if (Object.keys(jsErrors).length) {
         console.log();
         console.log(chalk.yellow('存在未翻译完全的JS文件，再次执行本命令将自动修复：'));
-        console.log(chalk.yellow(Object.keys(jsErrors).join('\n')));
+        console.log(chalk.yellow(`${spaces}${Object.keys(jsErrors).join(`\n${spaces}`)}`));
         console.log();
     } else {
         const { translateLanguages } = options;
