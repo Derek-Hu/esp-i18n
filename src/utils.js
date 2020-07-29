@@ -139,17 +139,22 @@ module.exports.asyncForEach = async function (array, callback) {
 const removeComment = (source) => {
     return source.replace(/<!--[^(<!--)]*-->/g, '');
 };
+const placeholder = '____VUE_PLACEHOLDER____';
 
 const getVueScriptContent = (source) => {
     if (isIdEmpty(source)) {
-        return '';
+        return {};
     }
     source = removeComment(source);
-    const matchs = source.match(/<script>((.*\n)*)<\/script>/);
-    if (matchs && matchs[1]) {
-        return matchs[1];
+    const matchs = source.match(/^(\s*<script[^>]*>)((.*\n*)*)(<\/script>)/);
+    if (matchs) {
+        return {
+            scripts: matchs[2],
+            placeholder,
+            wrapper: matchs[1] + placeholder + matchs[4],
+        };
     }
-    return '';
+    return {};
 };
 
 const extractChinease = (val) => {

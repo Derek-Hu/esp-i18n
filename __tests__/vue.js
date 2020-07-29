@@ -1,7 +1,6 @@
 import path from 'path';
 import fs from 'fs';
 import parseParam from '~/param';
-import vue from '~/vue';
 import i18n from '~/main';
 import settings from '~/settings';
 import traverse from "@babel/traverse";
@@ -46,8 +45,8 @@ const getSourceTemplateCode = (source) => {
     return Object.keys(chinas);
 }
 const getOriginalKeys = (source) => {
-    const code = Utils.getVueScriptContent(source);
-    const astTree = babelParser.parse(code, babelConfig);
+    const { scripts } = Utils.getVueScriptContent(source);
+    const astTree = babelParser.parse(scripts, babelConfig);
 
     let hasDataMethod = false;
     let labelKeyLength = 0;
@@ -68,20 +67,6 @@ const getOriginalKeys = (source) => {
                         });
                     }
                     hasDataMethod = !!dataMethod;
-
-                    // if (dataMethod && dataMethod.body) {
-                    //     const body = dataMethod.body.body;
-                    //     const returnStatment = body.find(statement => statement.type === 'ReturnStatement');
-                    //     if (returnStatment && returnStatment.argument.type === 'ObjectExpression') {
-                    //         const hasLabels = returnStatment.argument.properties.find(p => p.type === 'ObjectProperty' && p.key.name === IDName);
-                    //         if (hasLabels) {
-                    //             hasLabelKey = true;
-                    //             if (hasLabels.value.type === 'ObjectExpression') {
-                    //                 labelKeyLength = hasLabels.value.properties.length;
-                    //             }
-                    //         }
-                    //     }
-                    // }
                 }
             }
         },
@@ -89,7 +74,7 @@ const getOriginalKeys = (source) => {
             const node = _node.node;
             if (node.key.name === IDName) {
                 hasLabelKey = true;
-                if(node.value.properties){
+                if (node.value.properties) {
                     labelKeyLength = node.value.properties.length;
                 }
             }
@@ -230,7 +215,7 @@ describe('解析百度翻译页面结果', () => {
         const correct = fs.readFileSync(path.resolve(process.cwd(), 'test/result', 'data-no-data-default.vue'), encode);
 
         expect(after).toBe(correct);
-        
+
     });
 
     it('当export对象只有一个属性，但不包含data方法时，自动增加Labels属性', async () => {
@@ -275,7 +260,7 @@ describe('解析百度翻译页面结果', () => {
 
     it('data return 非对象写法...spread', async () => {
         expectLabelKeyLength('data-arrow/data-return-spread.vue');
-        
+
     });
 
     it('data return 非对象写法 variable', async () => {
@@ -288,7 +273,7 @@ describe('解析百度翻译页面结果', () => {
 
     it('data return 非对象写法...spread', async () => {
         expectLabelKeyLength('return/data-return-spread.vue');
-        
+
     });
 
     it('data return 非对象写法 variable', async () => {

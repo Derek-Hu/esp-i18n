@@ -3,6 +3,7 @@ const settings = require('./settings');
 const traverse = require("@babel/traverse").default;
 const Utils = require('./utils');
 const path = require('path');
+const chalk = require('chalk');
 
 const { asyncForEach } = Utils;
 const IDName = 'Labels';
@@ -50,10 +51,10 @@ const parseVueData = (source, i18n) => {
                 let dataMethod = properties.find(prop => {
                     return prop.type === 'ObjectMethod' && prop.key && prop.key.type === 'Identifier' && prop.key.name === 'data';
                 });
-                if(dataMethod){
+                if (dataMethod) {
                     body = dataMethod.body ? dataMethod.body.body : null;
                     bodyParent = dataMethod.body;
-                }else {
+                } else {
                     dataMethod = properties.find(prop => {
                         return prop.type === 'ObjectProperty' && prop.key && prop.key.type === 'Identifier' && prop.key.name === 'data' && prop.value.type === 'ArrowFunctionExpression';
                     });
@@ -61,7 +62,7 @@ const parseVueData = (source, i18n) => {
                         if (dataMethod.value.body.type === 'BlockStatement') {
                             body = dataMethod.value.body.body;
                             bodyParent = dataMethod.value.body;
-                        }else {
+                        } else {
                             isArrowDirect = true;
                         }
                     }
@@ -76,7 +77,7 @@ const parseVueData = (source, i18n) => {
                     return;
                 }
                 let returnStatment;
-                if(!isArrowDirect){
+                if (!isArrowDirect) {
                     if (!body || !body.length) {
                         actions.push({
                             start: bodyParent.start,
@@ -99,7 +100,7 @@ const parseVueData = (source, i18n) => {
                 }
                 const objectExpression = isArrowDirect ? dataMethod.value.body : returnStatment.argument;
                 if (objectExpression.type !== 'ObjectExpression') {
-                    if(source.indexOf(IDName)!==-1){
+                    if (source.indexOf(IDName) !== -1) {
                         suspect = true;
                     }
                     actions.push({
@@ -192,7 +193,7 @@ module.exports = async (translate, filepath, content, errorVueFiles, suspectVueF
         if (currentIsCommentEnd) {
             currentIsCommentEnd = false;
         }
-        if (line.indexOf('<template>') !== -1) {
+        if (/^\s*<template[^>]*>/.test(line)) {
             isStart = true;
         }
         if (line.indexOf('</template>') !== -1) {
@@ -249,7 +250,7 @@ module.exports = async (translate, filepath, content, errorVueFiles, suspectVueF
                     replaceAction = (vid) => line.replace(currentWord, `{{${getterExpression(vid)}}}`);
                     // line = line.replace(currentWord, `{{${getterExpression(vid)}}}`);
                 }
-                
+
                 const vid = cammelCase(await translate(currentWord));
                 if (Utils.isIdEmpty(vid)) {
                     return;
@@ -263,18 +264,31 @@ module.exports = async (translate, filepath, content, errorVueFiles, suspectVueF
 
     const newSource = newLines.join('\n');
     if (Object.keys(labels).length) {
-        const scripts = Utils.getVueScriptContent(content);
-        const { source: modifiedScripts, suspect, isUpdated } = parseVueData(scripts, labels, IDName);
-        // const modified = updateModifedScripts(newSource, modifiedScripts);
-        const modified = newSource.replace(scripts, modifiedScripts);
-        if(suspect){
-            suspectVueFiles.push(path.relative(process.cwd(), filepath));
+        const structure = Utils.getVueScriptContent(newSource);
+        const { scripts } = structure;
+        const shortPath = path.relative(process.cwd(), filepath);
+        if (!Utils.isIdEmpty(scripts)) {
+            try {
+                const { source: modifiedScripts, suspect, isUpdated } = parseVueData(scripts, labels, IDName);
+                if (isUpdated) {
+                    if (suspect) {
+                        suspectVueFiles.push(shortPath);
+                    }
+                    return {
+                        ...structure,
+                        scripts: modifiedScripts,
+                    }
+                }
+            } catch (e) {
+                console.log(chalk.red(e));
+            }
         }
-        if (isUpdated) {
-            return modified;
+        errorVueFiles.push(shortPath);
+        const addLines = `const ${IDName} = {\n` + Object.keys(labels).map(w => `\t${w}:'${labels[w]}'`).join(',\n') + '\n};\n';
+        return {
+            ...structure,
+            wrapper: addLines + structure.wrapper,
         }
-        errorVueFiles.push(path.relative(process.cwd(), filepath));
-        return `const ${IDName} = {\n` + Object.keys(labels).map(w => `\t${w}:'${labels[w]}'`).join(',\n') + '\n};\n' + modified;
     }
-    return content;
+    return Utils.getVueScriptContent(newSource);
 }

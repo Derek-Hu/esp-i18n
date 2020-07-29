@@ -12,20 +12,6 @@ const vue = require('./vue');
 
 const { asyncForEach } = Utils;
 
-const getVueSource = async function (translate, path, content, errorVueFiles, suspectVueFiles) {
-    var contentOneLine = await vue(translate, path, content, errorVueFiles, suspectVueFiles);
-    const placeholder = '____VUE_PLACEHOLDER____';
-    const scripts = '<script>\n' + placeholder + '</script>';
-    const matchs = contentOneLine.match(/<script>((.*\n)*)<\/script>/);
-    const validContent = matchs && matchs[1] ? matchs[1] : '';
-
-    return [
-        validContent,
-        contentOneLine.replace(/<script>((.*\n)*)<\/script>/, scripts),
-        placeholder
-    ];
-};
-
 module.exports = async (params) => {
 
     const options = paramParser(params);
@@ -53,7 +39,7 @@ module.exports = async (params) => {
 
         const isVueFile = /\.vue$/.test(file);
         const fileContent = fs.readFileSync(file, 'UTF8');
-        const [jsContent, wrapper, placeholder] = isVueFile ? await getVueSource(translate, file, fileContent, errorVueFiles, suspectVueFiles) : [fileContent, null];
+        const { scripts: jsContent, placeholder, wrapper } = isVueFile ? await vue(translate, file, fileContent, errorVueFiles, suspectVueFiles) : { scripts: fileContent };
         let source = jsContent;
 
         try {
@@ -99,7 +85,7 @@ module.exports = async (params) => {
         progressBar.tick({ fileIdx, msg: `处理文件完成：${shortFile}` });
     });
     progressBar.tick({ fileIdx, msg: '' });
-    
+
     if (errorVueFiles.length) {
         console.log();
         console.log(chalk.yellow('未能正确处理的Vue文件如下：'));
