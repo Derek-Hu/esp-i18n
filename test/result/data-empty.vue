@@ -5,6 +5,7 @@
   -->
   <section class="guide-wrap-section">
     <p>{{Labels.shifttoanearlierdatePrepareAsfollowsSothat}}</p>
+    <!-- 注释不应该删除 -->
     <span :title="Labels.invoicePhoto"></span>
     <p>  {{Labels.businessContractNumberPleaseEnter1}}   </p>
     <div :placeholder=" isTrue ? Labels.businesscontractNumberPleaseEnter1: Labels.interesting1"></div>
