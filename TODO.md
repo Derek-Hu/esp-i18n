@@ -1,3 +1,8 @@
-1. template中存在中文，JS中不存在，且无法找到data函数时，需增加内容，提示手动处理
-2. 能处理，但是翻译超时导致的id为null，提示再次执行，自动修复
-3. 以上2中增加单元测试
+1. Angular TS 报错
+2. locale文件Key不一致，代码无中文时，没有同步
+3. babelrc位置
+4. formatMessage移除参数id, importName与js不一样支持
+```js
+import { TranslateService, TranslateModule, TranslateLoader } from '@ngx-translate/core';
+this.translate.instant('wrong-most-after-end-not-supported')
+```
