@@ -42,7 +42,7 @@ module.exports = (options) => {
         const trimedsEqualId = keys.find(key => {
             return !Utils.isEmpty(locales[key]) ? `${locales[key]}`.trim() === trimedValue : false;
         });
-        
+
         const idTranslationMap = {
             id: Utils.isEmpty(fullId) ? null : toLocales[fullId],
             trim: Utils.isEmpty(trimedId) ? null : toLocales[trimedId],
@@ -58,7 +58,7 @@ module.exports = (options) => {
 
         if (selectedType === 'id') {
             finalTranslation = idTranslationMap[selectedType];
-        }else {
+        } else {
             const placeholder = '__';
             const template = value.replace(trimedValue, placeholder);
 
@@ -73,9 +73,9 @@ module.exports = (options) => {
             } else {
                 if (selectedType === 'equal') {
                     trimedTranslation = `${idTranslationMap[selectedType]}`.trim();
-                }else{
+                } else {
                     trimedTranslation = idTranslationMap[selectedType];
-                } 
+                }
             }
             finalTranslation = template.replace(placeholder, trimedTranslation);
         }
@@ -115,7 +115,7 @@ module.exports = (options) => {
         launchParams = launchOptions;
 
         if (!TranslationContainer) {
-            TranslationContainer = Utils.loadLocales(translateLanguages, options.target);
+            TranslationContainer = Utils.loadLocales(translateLanguages, options.target, options.tsExtension);
             debugger;
             // 同步各Locale文件Id
             // 1. 先各文件同步给中文zh.js

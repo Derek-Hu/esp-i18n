@@ -10,6 +10,7 @@ i18n({
     // 使用[localTools]指定引用路径，默认为'umi-plugin-locale'
     localTools: '~/locale-tools',
 
+    tsExtension: true,
     // Default Name: formatMessage
     // jsName: 'formatMessage',
 

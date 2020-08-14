@@ -101,6 +101,9 @@ i18n({
     // 使用[jsName]自定义工具名称
     localTools : '~/localTools',
 
+    // 是否生成zh.ts，默认生成zh.js文件
+    // tsExtension: false,
+
     // Default Name: formatMessage
     // jsName: 'formatMessage',
 

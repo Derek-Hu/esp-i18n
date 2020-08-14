@@ -56,7 +56,7 @@ module.exports = async (params) => {
             }
         } catch (e) {
             syntaxError = true;
-            if(!errorVueFiles.includes(shortPath)){
+            if (!errorVueFiles.includes(shortPath)) {
                 errorVueFiles.push(shortPath);
             }
             console.log();
@@ -80,7 +80,7 @@ module.exports = async (params) => {
         await asyncForEach(entries, async entry => {
             if (Utils.isEmpty(entry.value)) {
                 // Add [import from ''] Statement
-                source = source.slice(0, entry.start) + (isVueFile? '\n': '') +entry.getReplacement(null, finalFuncName) + source.slice(entry.end);
+                source = source.slice(0, entry.start) + (isVueFile ? '\n' : '') + entry.getReplacement(null, finalFuncName) + source.slice(entry.end);
                 return;
             }
             const id = await translate(entry.value);
@@ -101,7 +101,7 @@ module.exports = async (params) => {
         const allLocales = translate.getLocales();
 
         Object.keys(allLocales).forEach(language => {
-            Utils.writeSync(path.resolve(options.target, `${language}.js`), `${settings.Header}${JSON.stringify(allLocales[language], null, 2)}`);
+            Utils.writeSync(path.resolve(options.target, `${language}.${options.tsExtension ? 'ts' : 'js'}`), `${settings.Header}${JSON.stringify(allLocales[language], null, 2)}`);
         });
         Utils.writeSync(path.resolve(options.srcTarget, path.relative(options.baseFolder, file)), source);
 

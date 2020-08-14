@@ -1,6 +1,6 @@
 {
   "name": "esp-i18n",
-  "version": "1.3.2",
+  "version": "1.4.0",
   "main": "src/main.js",
   "description": "Extract locale files and rewrite source code for i18n",
   "scripts": {

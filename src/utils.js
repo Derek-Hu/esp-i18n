@@ -126,14 +126,14 @@ const jsonCompatiable = (filepath) => {
     }
 }
 module.exports.jsonCompatiable = jsonCompatiable;
-module.exports.loadLocales = function (languages, baseFolder) {
+module.exports.loadLocales = function (languages, baseFolder, isTs) {
     const resources = {};
 
     if (!languages || !languages.length) {
         return resources;
     }
     languages.forEach(language => {
-        resources[language] = jsonCompatiable(path.resolve(baseFolder, `${language}.js`));
+        resources[language] = jsonCompatiable(path.resolve(baseFolder, `${language}.${isTs ? 'ts' : 'js'}`));
         if (!resources[language]) {
             resources[language] = {};
         }
